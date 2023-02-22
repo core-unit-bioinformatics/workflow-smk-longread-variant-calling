@@ -47,7 +47,9 @@ rule align_minimap2_hifi:
             f'\\tSM:{wildcards.sample}"'
         ),
         sam_flag_out = SAM_FLAG_EXCLUDE,
-        sam_threads = CPU_LOW
+        sam_threads = CPU_LOW,
+        acc_in=lambda wildcards, input: register_input(input.reads),
+        acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
         "minimap2 -a -x map-hifi --MD --eqx -L -t {threads} "
         " -R {params.readgroup} -N 1 {input.reference} "
@@ -107,7 +109,9 @@ rule align_lra_hifi:
             f'\\tSM:{wildcards.sample}"'
         ),
         sam_flag_out = SAM_FLAG_EXCLUDE,
-        sam_threads = CPU_LOW
+        sam_threads = CPU_LOW,
+        acc_in=lambda wildcards, input: register_input(input.reads),
+        acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
         "lra align --CCS -p s -t {threads} -at 0.8 "
         " -PrintNumAln 2 --printMD "
@@ -169,7 +173,9 @@ rule align_pbmm2_hifi:
             f'\\tSM:{wildcards.sample}"'
         ),
         sam_flag_out = SAM_FLAG_EXCLUDE,
-        sam_threads = CPU_LOW
+        sam_threads = CPU_LOW,
+        acc_in=lambda wildcards, input: register_input(input.reads),
+        acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
         "pbmm2 align --preset HiFi --strip -j {threads} "
         " --rg {params.readgroup} --best-n 2 --unmapped "
