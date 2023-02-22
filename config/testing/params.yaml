@@ -1,0 +1,13 @@
+
+input_file_ext:
+  - fastq.gz
+  - fasta.gz
+  - fq.gz
+  - fa.gz
+  - fna.gz
+
+reference_genomes:
+  t2tv2: t2t-chm13-v2.0.fa
+
+run_hifi_aligner:
+  - minimap2

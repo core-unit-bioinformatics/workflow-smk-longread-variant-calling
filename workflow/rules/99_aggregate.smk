@@ -7,8 +7,6 @@ in the main Snakefile
 """
 
 WORKFLOW_OUTPUT = []
-# Example for extending the output
-# with output from another module
-# (remember to include that module
-# in 00_modules.smk):
-# WORKFLOW_OUTPUT.extend(MODULE_OUTPUT)
+
+WORKFLOW_OUTPUT.extend(ALIGN_HIFI_OUTPUT)
+WORKFLOW_OUTPUT.extend(ALIGN_ONT_OUTPUT)

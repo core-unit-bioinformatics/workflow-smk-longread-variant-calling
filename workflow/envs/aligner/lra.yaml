@@ -1,0 +1,4 @@
+name: lra
+dependencies:
+  - lra=1.3.4
+  - samtools=1.16.1
