@@ -17,7 +17,7 @@ rule align_minimap2_hifi:
             "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.sort.bam"
         ),
         index = DIR_PROC.joinpath(
-            "10-align", "{sample}_hifi_{path_id}.pbmm2.{ref}.sort.bam.bai"
+            "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.sort.bam.bai"
         ),
         exclude = DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.excl.bam"
@@ -38,8 +38,8 @@ rule align_minimap2_hifi:
         "../../envs/aligner/mm2.yaml"
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, input, attempt: input.size_mb + 16384 * attempt,
-        time_hrs = lambda wildcards, attempt: 11 + 11 * attempt,
+        mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
+        time_hrs = lambda wildcards, attempt: 2 + 2 * attempt,
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
         readgroup = lambda wildcards: (
@@ -79,7 +79,7 @@ rule align_lra_hifi:
             "10-align", "{sample}_hifi_{path_id}.lra.{ref}.sort.bam"
         ),
         index = DIR_PROC.joinpath(
-            "10-align", "{sample}_hifi_{path_id}.pbmm2.{ref}.sort.bam.bai"
+            "10-align", "{sample}_hifi_{path_id}.lra.{ref}.sort.bam.bai"
         ),
         exclude = DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.lra.{ref}.excl.bam"
@@ -100,8 +100,8 @@ rule align_lra_hifi:
         "../../envs/aligner/lra.yaml"
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, input, attempt: input.size_mb + 16384 * attempt,
-        time_hrs = lambda wildcards, attempt: 11 + 11 * attempt,
+        mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
+        time_hrs = lambda wildcards, attempt: 2 + 2 * attempt,
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
         readgroup = lambda wildcards: (
@@ -164,8 +164,8 @@ rule align_pbmm2_hifi:
         "../../envs/aligner/pbmm2.yaml"
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, input, attempt: input.size_mb + 16384 * attempt,
-        time_hrs = lambda wildcards, attempt: 11 + 11 * attempt,
+        mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
+        time_hrs = lambda wildcards, attempt: 2 + 2 * attempt,
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
         readgroup = lambda wildcards: (
