@@ -16,7 +16,8 @@ def process_sample_sheet():
     SAMPLE_SHEET = pandas.read_csv(
         SAMPLE_SHEET_FILE,
         sep="\t",
-        header=0
+        header=0,
+        comment="#"
     )
 
     # step 1: collect input file(s) per row
@@ -63,7 +64,7 @@ def collect_input_files(sample_sheet):
             sample_input[row.sample] = sample_info
 
         read_type = ReadTypes[row.read_type.lower()].name
-        input_files, input_hashes, path_ids = collect_sequence_input(row.path)
+        input_files, input_hashes, path_ids = collect_sequence_input(row.input_path)
         sample_input[row.sample][read_type]["paths"].extend(input_files)
         sample_input[row.sample][read_type]["path_hashes"].extend(input_hashes)
         sample_input[row.sample][read_type]["path_ids"].extend(path_ids)

@@ -31,3 +31,5 @@ HIFI_ALIGNER_NAME_MAPPING = {
 HIFI_ALIGNER_WILDCARDS = [
     HIFI_ALIGNER_NAME_MAPPING[name] for name in RUN_HIFI_ALIGNER
 ]
+
+CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
