@@ -8,15 +8,15 @@ rule merge_alignments_per_sample:
     input:
         bams = lambda wildcards: expand(
             DIR_PROC.joinpath(
-                "10-align", "{{sample}}_{{read_type}}_{path_id}.{{aligner}}.{{ref}}.sort.bam",
-                path_id=MAP_SAMPLE_TO_INPUT_FILES[wildcards.sample][wildcards.read_type]["path_ids"]
+                "10-align", "{{sample}}_{{read_type}}_{path_id}.{{aligner}}.{{ref}}.sort.bam"
             ),
+            path_id=MAP_SAMPLE_TO_INPUT_FILES[wildcards.sample][wildcards.read_type]["path_ids"]
         ),
         bais = lambda wildcards: expand(
             DIR_PROC.joinpath(
-                "10-align", "{{sample}}_{{read_type}}_{path_id}.{{aligner}}.{{ref}}.sort.bam.bai",
-                path_id=MAP_SAMPLE_TO_INPUT_FILES[wildcards.sample][wildcards.read_type]["path_ids"]
+                "10-align", "{{sample}}_{{read_type}}_{path_id}.{{aligner}}.{{ref}}.sort.bam.bai"
             ),
+            path_id=MAP_SAMPLE_TO_INPUT_FILES[wildcards.sample][wildcards.read_type]["path_ids"]
         ),
     output:
         bam = DIR_PROC.joinpath(
