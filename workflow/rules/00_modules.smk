@@ -11,5 +11,8 @@ include: "00-prepare/settings.smk"
 
 include: "10-align/pyutils.smk"
 include: "10-align/hifi.smk"
+include: "20-postalign/merge.smk"
+
+include: "30-callshort/deepvariant.smk"
 
 include: "99-outputs/align.smk"
