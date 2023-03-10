@@ -28,7 +28,8 @@ rule run_deepvariant:
         arch=":arch=skylake"  # docker default built with AVX512
     params:
         tempdir = lambda wildcards: DIR_PROC.joinpath(
-            "temp", "deepvariant", wildcards.sample, wildcards.chrom
+            "temp", "deepvariant", wildcards.ref,
+            wildcards.sample, wildcards.aligner, wildcards.chrom
         ),
         model = lambda wildcards: config["deepvariant_models"][wildcards.read_type]
     shell:
