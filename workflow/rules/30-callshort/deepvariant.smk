@@ -40,7 +40,7 @@ rule run_deepvariant:
         "--output_vcf {output.vcfgz} --regions {wildcards.chrom} "
         "--noruntime_report --novcf_stats_report "
         "--intermediate_results_dir {params.tempdir} &> {log}"
-            " && "
+            " ; "
         "rm -rfd {params.tempdir}"
 
 
