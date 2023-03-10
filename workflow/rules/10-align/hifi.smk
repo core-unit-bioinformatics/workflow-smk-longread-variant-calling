@@ -195,7 +195,7 @@ rule run_minimap2_hifi_align:
         bams = expand(
             rules.align_minimap2_hifi.output.sort,
             expand_hifi_reads,
-            ref=list(REF_GENOMES.keys()),
+            ref=USE_REF_GENOMES,
             sample=HIFI_SAMPLES,
             path_id=HIFI_INPUT,
         )
@@ -206,7 +206,7 @@ rule run_lra_hifi_align:
         bams = expand(
             rules.align_lra_hifi.output.sort,
             expand_hifi_reads,
-            ref=list(REF_GENOMES.keys()),
+            ref=USE_REF_GENOMES,
             sample=HIFI_SAMPLES,
             path_id=HIFI_INPUT,
         )
@@ -217,7 +217,7 @@ rule run_pbmm2_hifi_align:
         bams = expand(
             rules.align_pbmm2_hifi.output.sort,
             expand_hifi_reads,
-            ref=list(REF_GENOMES.keys()),
+            ref=USE_REF_GENOMES,
             sample=HIFI_SAMPLES,
             path_id=HIFI_INPUT,
         )
@@ -230,7 +230,7 @@ rule run_all_hifi_align:
                 "10-align", "{sample}_hifi_{path_id}.{aligner}.{ref}.sort.bam"
             ),
             expand_hifi_reads,
-            ref=list(REF_GENOMES.keys()),
+            ref=USE_REF_GENOMES,
             sample=HIFI_SAMPLES,
             path_id=HIFI_INPUT,
             aligner=HIFI_ALIGNER_WILDCARDS

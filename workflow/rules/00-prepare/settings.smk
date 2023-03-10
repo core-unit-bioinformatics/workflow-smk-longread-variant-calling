@@ -6,6 +6,7 @@ user_ref_genomes = config.get("reference_genomes", None)
 if user_ref_genomes is None:
     raise ValueError(f"Config does not contain key: 'reference_genomes'")
 REF_GENOMES = dict()
+USE_REF_GENOMES = []
 for key, value in user_ref_genomes.items():
     _path_to_ref = DIR_GLOBAL_REF.joinpath(value)
     REF_GENOMES[key] = _path_to_ref
@@ -13,6 +14,8 @@ for key, value in user_ref_genomes.items():
     _ref_fai_suffix = f"{_ref_suffix}.fai"
     _path_to_idx = _path_to_ref.with_suffix(_ref_fai_suffix)
     REF_GENOMES[(key, "fai")] = _path_to_idx
+    USE_REF_GENOMES.append(key)
+
 
 # Default is (or-chained):
 # - read unmapped

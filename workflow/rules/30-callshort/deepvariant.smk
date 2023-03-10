@@ -52,6 +52,6 @@ rule run_deepvariant_hifi_calling:
             sample=HIFI_SAMPLES,
             read_type=["hifi"],
             aligner=HIFI_ALIGNER_WILDCARDS,
-            ref=list(REF_GENOMES.keys()),
+            ref=USE_REF_GENOMES,
             chrom=CHROMOSOMES
         )
