@@ -2,6 +2,7 @@
 rule run_deepvariant:
     input:
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
         bam = DIR_PROC.joinpath(
             "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam"),
         bai = DIR_PROC.joinpath(
