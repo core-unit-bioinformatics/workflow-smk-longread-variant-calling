@@ -24,7 +24,7 @@ rule run_deepvariant:
     resources:
         mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
         time_hrs = lambda wildcards, attempt: 1 * attempt,
-        arch="arch=skylake"  # docker default built with AVX512
+        arch=":arch=skylake"  # docker default built with AVX512
     params:
         tempdir = lambda wildcards: DIR_PROC.joinpath(
             "temp", "deepvariant", wildcards.sample, wildcards.chrom
