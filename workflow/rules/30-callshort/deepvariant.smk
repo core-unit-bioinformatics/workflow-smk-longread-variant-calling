@@ -35,7 +35,7 @@ rule run_deepvariant:
             " && "
         "mkdir -p {params.tempdir}"
             " && "
-        "/opt/deepvariant/bin/run_deepvariant --model-type {params.model} "
+        "/opt/deepvariant/bin/run_deepvariant --model_type {params.model} "
         "--ref {input.ref} --reads {input.bam} --num_shards {threads} "
         "--output_vcf {output.vcfgz} --regions {wildcards.chrom} "
         "--noruntime_report --novcf_stats_report "
