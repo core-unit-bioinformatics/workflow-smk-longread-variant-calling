@@ -69,6 +69,11 @@ def collect_input_files(sample_sheet):
         sample_input[row.sample][read_type]["path_hashes"].extend(input_hashes)
         sample_input[row.sample][read_type]["path_ids"].extend(path_ids)
         for path, full_hash, path_id in zip(input_files, input_hashes, path_ids):
+            # TODO
+            # ASM
+            # Ignoring the unlikely event of a genuine hash
+            # collision, this enforces the assumption of a
+            # 1-to-1 mapping from sample to input file
             assert path_id not in path_input, "Hash prefix collision"
             path_input[path_id] = {
                 "sample": row.sample,
@@ -82,6 +87,25 @@ def collect_input_files(sample_sheet):
                 ONT_INPUT.append(path_id)
 
     return sample_input, path_input
+
+
+def subset_path(full_path):
+    """This helper exists to reduce
+    the absolute path to a file
+    to just the file name and its
+    parent.
+    TODO: should be codified as part
+    of the template utilities to improve
+    infrastructure portability of active
+    workflows
+    """
+    folder_name = full_path.parent.name
+    file_name = full_path.name
+    subset_path = f"{folder_name}/{file_name}"
+    # if it so happens that the file resides
+    # in a root-level location, strip off
+    # leading slash
+    return subset_path.strip("/")
 
 
 def collect_sequence_input(path_spec):
@@ -99,14 +123,19 @@ def collect_sequence_input(path_spec):
     for sub_input in path_spec.split(","):
         input_path = pathlib.Path(sub_input).resolve(strict=True)
         if input_path.is_file():
-            input_hash = hashlib.sha256(str(input_path).encode("utf-8")).hexdigest()
+            assert not input_path.name.endswith(".fofn"), "FOFN support not implemented"
+            input_hash = hashlib.sha256(
+                subset_path(input_path).encode("utf-8")
+            ).hexdigest()
             input_files.append(input_path)
             input_hashes.append(input_hash)
             path_ids.append(input_hash[:10])
         elif input_path.is_dir():
             collected_files = _collect_files(input_path)
             collected_hashes = [
-                hashlib.sha256(str(f).encode("utf-8")).hexdigest() for f in collected_files
+                hashlib.sha256(
+                    subset_path(f).encode("utf-8")
+                ).hexdigest() for f in collected_files
             ]
             collected_path_ids = [
                 full_hash[:10] for full_hash in collected_hashes
@@ -116,6 +145,7 @@ def collect_sequence_input(path_spec):
             path_ids.extend(collected_path_ids)
         else:
             raise ValueError(f"Cannot handle input: {sub_input}")
+
     return input_files, input_hashes, path_ids
 
 

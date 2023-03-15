@@ -48,7 +48,13 @@ def expand_hifi_reads(*args):
     expand_wildcards = []
     for combination in iter_other_comb:
         for path in grouped_values["path_id"]:
+            # TODO
+            # ASM
+            # This line assumes a 1-to-1 mapping between
+            # sample and input files - for variant calling,
+            # it rather seems that this is ok to work with
             sample = MAP_PATHID_TO_FILE_INFO[path]["sample"]
+            assert isinstance(sample, str), f"Violated assumption: {sample}"
             wildcards = dict(
                 (key, val) for key, val in zip(other_group_keys, combination)
             )
