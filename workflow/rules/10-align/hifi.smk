@@ -35,7 +35,7 @@ rule align_minimap2_hifi:
         ),
 
     conda:
-        DIR_ENVS.joinpath("mm2.yaml")
+        DIR_ENVS.joinpath("aligner", "mm2.yaml")
     threads: CPU_MEDIUM
     resources:
         mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
@@ -97,7 +97,7 @@ rule align_lra_hifi:
         ),
 
     conda:
-        DIR_ENVS.joinpath("lra.yaml")
+        DIR_ENVS.joinpath("aligner", "lra.yaml")
     threads: CPU_MEDIUM
     resources:
         mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
@@ -161,7 +161,7 @@ rule align_pbmm2_hifi:
         ),
 
     conda:
-        DIR_ENVS.joinpath("pbmm2.yaml")
+        DIR_ENVS.joinpath("aligner", "pbmm2.yaml")
     threads: CPU_MEDIUM
     resources:
         mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
