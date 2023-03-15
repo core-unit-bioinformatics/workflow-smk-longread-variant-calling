@@ -12,6 +12,8 @@ reference_genomes:
 
 run_hifi_aligner:
   - minimap2
+  - pbmm2
+  - lra
 
 # only v1.5.0+ supports low-error
 # ONT reads (>=10.4)
