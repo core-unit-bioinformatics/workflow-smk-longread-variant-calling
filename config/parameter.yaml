@@ -15,6 +15,17 @@ run_hifi_aligner:
   - pbmm2
   - lra
 
+run_hifi_sv_toolchain:
+  - minimap2, cuteSV
+  - lra, sniffles
+
+### GENERAL TOOL RUNTIME PARAMETERS
+
+call_chromosomes:
+  - chr20
+
+### PARAMETERS FOR SHORT VARIANT CALLING
+
 # only v1.5.0+ supports low-error
 # ONT reads (>=10.4)
 deepvariant: deepvariant_1.5.0.sif
@@ -22,5 +33,26 @@ deepvariant_models:
   hifi: PACBIO
   ont: ONT_R104
 
-call_chromosomes:
-  - chr20
+
+### PARAMETERS FOR LONG VARIANT CALLING
+
+# SVs are defined as variants
+# of at least 50 bp.
+# This parameter is set below
+# that threshold to produce some
+# overlap with the short variant
+# callers (in bp)
+minimum_sv_length_call: 35
+
+# ignore alignments with MAPQ
+# below this threshold
+minimum_mapq: 20
+
+# ignore regions/candidates with read
+# coverage/support below this threshold
+# (interpretation is tool-specific)
+minimum_coverage: 5
+
+# ignore reads/alignments with an alignment
+# length below this threshold (in bp)
+minimum_alignment_length: 1000

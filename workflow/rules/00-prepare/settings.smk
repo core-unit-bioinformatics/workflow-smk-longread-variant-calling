@@ -17,6 +17,9 @@ for key, value in user_ref_genomes.items():
     USE_REF_GENOMES.append(key)
 
 
+CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
+assert isinstance(CHROMOSOMES, list)
+
 # Default is (or-chained):
 # - read unmapped
 # - not primary alignment
@@ -24,6 +27,11 @@ for key, value in user_ref_genomes.items():
 # - read is PCR or optical duplicate
 SAM_FLAG_EXCLUDE = config.get("sam_flag_exclude", 1796)
 assert isinstance(SAM_FLAG_EXCLUDE, int)
+
+
+###############################
+### SETTINGS FOR HIFI ALIGNERS
+###############################
 
 RUN_HIFI_ALIGNER = config.get("run_hifi_aligner", [])
 assert isinstance(RUN_HIFI_ALIGNER, list)
@@ -36,8 +44,41 @@ HIFI_ALIGNER_NAME_MAPPING = {
     "lra": "lra"
 }
 
-HIFI_ALIGNER_WILDCARDS = [
-    HIFI_ALIGNER_NAME_MAPPING[name] for name in RUN_HIFI_ALIGNER
-]
+HIFI_ALIGNER_WILDCARDS = sorted(
+    set(
+        HIFI_ALIGNER_NAME_MAPPING[name.lower()] for name in RUN_HIFI_ALIGNER
+    )
+)
 
-CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
+#################################
+### SETTINGS FOR HIFI SV CALLERS
+#################################
+
+MIN_SV_LEN_CALL = int(config["minimum_sv_length_call"])
+MIN_MAPQ = int(config["minimum_mapq"])
+MIN_COV = int(config["minimum_coverage"])
+MIN_ALN_LEN = int(config["minimum_alignment_length"])
+
+HIFI_SV_CALLER_NAME_MAPPING = {
+    "sniffles": "sniffles",
+    "cutesv": "cutesv"
+}
+
+###########################################
+### SETTINGS FOR HIFI SV CALLING TOOLCHAIN
+###########################################
+
+RUN_HIFI_SV_CALLING_TOOLCHAIN = config.get("run_hifi_sv_toolchain", [])
+if not RUN_HIFI_SV_CALLING_TOOLCHAIN and VERBOSE:
+    sys.stderr.write("Warning: no HiFi SV calling toolchain configured to run.")
+
+HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS = []
+ALIGNER_FOR_CALLER = collections.defaultdict(list)
+
+for (aligner, caller) in RUN_HIFI_SV_CALLING_TOOLCHAIN:
+    wildcard_aln = HIFI_ALIGNER_NAME_MAPPING[aligner]
+    wildcard_call = HIFI_SV_CALLER_NAME_MAPPING[caller]
+    HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS.append(
+        f"{wildcard_aln}-{wildcard_call}"
+    )
+    ALIGNER_FOR_CALLER[(wildcard_call, "hifi")].append(wildcard_aln)
