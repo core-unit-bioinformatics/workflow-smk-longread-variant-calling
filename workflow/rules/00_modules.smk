@@ -15,4 +15,6 @@ include: "20-postalign/merge.smk"
 
 include: "30-callshort/deepvariant.smk"
 
+include: "40-callsv/hifi.smk"
+
 include: "99-outputs/align.smk"
