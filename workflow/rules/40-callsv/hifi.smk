@@ -127,6 +127,6 @@ rule run_hifi_sv_calling:
                 "40-callsv", "{sample}_hifi.{sv_calling_toolchain}.{ref}.vcf"
             ),
             sample=HIFI_SAMPLES,
-            hifi_sv_call_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+            sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
             ref=USE_REF_GENOMES
         )
