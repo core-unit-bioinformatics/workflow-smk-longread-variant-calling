@@ -92,7 +92,7 @@ rule sv_call_cutesv_hifi:
         "--min_mapq {params.min_mapq} "
         "--min_read_len {params.min_aln_len} "
         "--min_support {params.min_cov} "
-        "{input.bam} {input.reference} {output.vcf} {params.out_dir} &> {log}"
+        "{input.bam} {input.ref} {output.vcf} {params.tmp_wd} &> {log}"
         " ; rm -rfd {params.tmp_wd}"
 
 
