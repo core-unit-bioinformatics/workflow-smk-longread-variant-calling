@@ -115,16 +115,19 @@ rule align_lra_hifi:
     shell:
         "lra align --CCS -p s -t {threads} -at 0.8 "
         " -PrintNumAln 2 --printMD "
-        " {input.reference} {input.reads} 2> {log.aln} | "
+        " {input.reference} {input.reads} 2> {log.aln}"
+            " | "
         " samtools addreplacerg -m overwrite_all "
-        " --threads {params.sam_threads} -u -r {params.readgroup} | "
+        " --threads {params.sam_threads} -u -r {params.readgroup} /dev/stdin"
+            " | "
         " samtools view -u -h --output-unselected {output.exclude} "
-        " -F {params.sam_flag_out} | "
+        " -F {params.sam_flag_out}"
+            " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
         " --threads {params.sam_threads} "
         " -T {wildcards.sample}_{wildcards.path_id}_lra -o {output.sort} "
         " 2> {log.sam}"
-        " && "
+            " && "
         "samtools index -@ {threads} {output.sort}"
 
 
