@@ -167,7 +167,7 @@ rule align_pbmm2_hifi:
         DIR_ENVS.joinpath("aligner", "pbmm2.yaml")
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
+        mem_mb = lambda wildcards, input, attempt: input.size_mb + 8192 * attempt,
         time_hrs = lambda wildcards, attempt: 2 + 2 * attempt,
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
