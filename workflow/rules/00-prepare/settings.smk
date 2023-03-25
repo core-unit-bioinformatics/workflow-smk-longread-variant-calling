@@ -76,9 +76,9 @@ HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS = []
 ALIGNER_FOR_CALLER = collections.defaultdict(list)
 
 for toolchain in RUN_HIFI_SV_CALLING_TOOLCHAIN:
-    aligner, caller = toolchain.strip().split(",")
-    wildcard_aln = HIFI_ALIGNER_NAME_MAPPING[aligner]
-    wildcard_call = HIFI_SV_CALLER_NAME_MAPPING[caller]
+    aligner, caller = toolchain.split(",")
+    wildcard_aln = HIFI_ALIGNER_NAME_MAPPING[aligner.strip()]
+    wildcard_call = HIFI_SV_CALLER_NAME_MAPPING[caller.strip()]
     HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS.append(
         f"{wildcard_aln}-{wildcard_call}"
     )
