@@ -17,7 +17,8 @@ run_hifi_aligner:
 
 run_hifi_sv_toolchain:
   - minimap2, cuteSV
-  - lra, sniffles
+  - minimap2, sniffles
+  #- lra, sniffles
 
 ### GENERAL TOOL RUNTIME PARAMETERS
 
