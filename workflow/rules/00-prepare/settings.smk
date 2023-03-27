@@ -50,6 +50,10 @@ HIFI_ALIGNER_WILDCARDS = sorted(
     )
 )
 
+# This dict is populated below to link aligners
+# to run for the individual variant callers
+ALIGNER_FOR_CALLER = collections.defaultdict(list)
+
 ####################################
 ### SETTINGS FOR HIFI SHORT CALLERS
 ### VARIANTS < 50 bp
@@ -68,7 +72,6 @@ if not RUN_HIFI_SHORT_CALLING_TOOLCHAIN and VERBOSE:
     sys.stderr.write("Warning: no HiFi short variant calling toolchain configured to run.")
 
 HIFI_SHORT_CALLING_TOOLCHAIN_WILDCARDS = []
-ALIGNER_FOR_CALLER = collections.defaultdict(list)
 
 for toolchain in RUN_HIFI_SHORT_CALLING_TOOLCHAIN:
     aligner, caller = toolchain.split(",")
@@ -104,7 +107,6 @@ if not RUN_HIFI_SV_CALLING_TOOLCHAIN and VERBOSE:
     sys.stderr.write("Warning: no HiFi SV calling toolchain configured to run.")
 
 HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS = []
-ALIGNER_FOR_CALLER = collections.defaultdict(list)
 
 for toolchain in RUN_HIFI_SV_CALLING_TOOLCHAIN:
     aligner, caller = toolchain.split(",")
