@@ -20,6 +20,9 @@ run_hifi_sv_toolchain:
   - minimap2, sniffles
   #- lra, sniffles
 
+run_hifi_short_toolchain:
+  - minimap2, DeepVariant
+
 ####################################
 ### GENERAL TOOL RUNTIME PARAMETERS
 ####################################

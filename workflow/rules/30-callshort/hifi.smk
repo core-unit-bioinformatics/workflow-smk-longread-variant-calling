@@ -1,5 +1,5 @@
 
-rule run_deepvariant:
+rule short_call_deepvariant_hifi:
     input:
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
@@ -9,15 +9,15 @@ rule run_deepvariant:
             "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam.bai"),
     output:
         vcfgz = DIR_PROC.joinpath(
-            "30-callshort", "{sample}_{read_type}.{aligner}.{ref}.deepvar.{chrom}.vcf.gz"
+            "30-callshort", "{sample}_{read_type}.{aligner}-deepvar.{ref}.{chrom}.vcf.gz"
         )
     benchmark:
         DIR_RSRC.joinpath(
-            "30-callshort", "{sample}_{read_type}.{aligner}.{ref}.deepvar.{chrom}.rsrc"
+            "30-callshort", "{sample}_{read_type}.{aligner}-deepvar.{ref}.{chrom}.rsrc"
         )
     log:
         DIR_LOG.joinpath(
-            "30-callshort", "{sample}_{read_type}.{aligner}.{ref}.deepvar.{chrom}.log"
+            "30-callshort", "{sample}_{read_type}.{aligner}-deepvar.{ref}.{chrom}.log"
         )
     container:
         f"{config['container_store']}/{config['deepvariant']}"
@@ -49,10 +49,10 @@ rule run_deepvariant:
 rule run_deepvariant_hifi_calling:
     input:
         vcfs = expand(
-            rules.run_deepvariant.output.vcfgz,
+            rules.short_call_deepvariant_hifi.output.vcfgz,
             sample=HIFI_SAMPLES,
             read_type=["hifi"],
-            aligner=HIFI_ALIGNER_WILDCARDS,
+            aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
             ref=USE_REF_GENOMES,
             chrom=CHROMOSOMES
         )
