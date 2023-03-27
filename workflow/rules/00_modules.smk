@@ -13,7 +13,7 @@ include: "10-align/pyutils.smk"
 include: "10-align/hifi.smk"
 include: "20-postalign/merge.smk"
 
-include: "30-callshort/deepvariant.smk"
+include: "30-callshort/hifi.smk"
 
 include: "40-callsv/hifi.smk"
 
