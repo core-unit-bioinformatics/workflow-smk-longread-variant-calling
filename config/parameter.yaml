@@ -20,10 +20,9 @@ run_hifi_sv_toolchain:
   - minimap2, sniffles
   #- lra, sniffles
 
+####################################
 ### GENERAL TOOL RUNTIME PARAMETERS
-
-call_chromosomes:
-  - chr20
+####################################
 
 ### PARAMETERS FOR SHORT VARIANT CALLING
 
