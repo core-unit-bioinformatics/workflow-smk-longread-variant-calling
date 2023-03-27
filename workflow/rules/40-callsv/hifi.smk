@@ -23,7 +23,7 @@ rule sv_call_sniffles_hifi:
     threads: CPU_MEDIUM
     resources:
         mem_mb=lambda wildcards, attempt: 32768 * attempt,
-        time_hrs=lambda wildcards, attempt: f"{attempt**3}:59:59",
+        time_hrs=lambda wildcards, attempt: attempt**3,
     params:
         min_sv_len = MIN_SV_LEN_CALL,
         min_mapq = MIN_MAPQ,
@@ -71,7 +71,7 @@ rule sv_call_cutesv_hifi:
     threads: CPU_LOW
     resources:
         mem_mb=lambda wildcards, attempt: 32768 * attempt,
-        time_hrs=lambda wildcards, attempt: f"{attempt*attempt}:59:59",
+        time_hrs=lambda wildcards, attempt: attempt*attempt,
     params:
         min_sv_len = MIN_SV_LEN_CALL,
         min_mapq = MIN_MAPQ,
