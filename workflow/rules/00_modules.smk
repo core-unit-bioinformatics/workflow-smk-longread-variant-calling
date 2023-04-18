@@ -17,4 +17,9 @@ include: "30-callshort/hifi.smk"
 
 include: "40-callsv/hifi.smk"
 
+include: "50-postcall/10_split.smk"
+include: "50-postcall/20_concat.smk"
+include: "50-postcall/30_compress.smk"
+
 include: "99-outputs/align.smk"
+include: "99-outputs/calling.smk"

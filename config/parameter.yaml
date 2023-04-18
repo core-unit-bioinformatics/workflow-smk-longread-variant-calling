@@ -36,6 +36,15 @@ deepvariant_models:
   hifi: PACBIO
   ont: ONT_R104
 
+# This is used to split the potentially
+# large short variant callsets
+# (w/o any other filtering)
+# by variant type
+# (bcftools 'view --types' option)
+split_short_calls:
+  snv: snps
+  indel: indels
+  other: mnps,ref,bnd,other
 
 ### PARAMETERS FOR LONG VARIANT CALLING
 
