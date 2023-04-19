@@ -73,7 +73,7 @@ rule concat_chromosome_short_callsets:
         mem_mb = lambda wildcards, attempt: 1024 * attempt
     shell:
         "bcftools concat --file-list {input.fofn} "
-        "--compression-level 9 --output {output.vcf} --output-type z &> {log}"
+        "--output {output.vcf} --output-type z &> {log}"
             " && "
         "bcftools tabix -p vcf -f {output.vcf} &>> {log}"
 
