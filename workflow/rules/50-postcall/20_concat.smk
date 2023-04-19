@@ -71,6 +71,8 @@ rule concat_chromosome_short_callsets:
         DIR_ENVS.joinpath("biotools.yaml")
     resources:
         mem_mb = lambda wildcards, attempt: 1024 * attempt
+    params:
+        acc_out = lambda wildcards, output: register_result(output)
     shell:
         "bcftools concat --file-list {input.fofn} "
         "--output {output.vcf} --output-type z &> {log}"

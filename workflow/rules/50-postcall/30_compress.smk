@@ -22,6 +22,8 @@ rule compress_index_sv_callset:
         )
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
+    params:
+        acc_out = lambda wildcards, output: register_result(output)
     shell:
         "bgzip --keep --stdout --compress-level 9 "
         "{input.vcf} > {output.vcf}"
