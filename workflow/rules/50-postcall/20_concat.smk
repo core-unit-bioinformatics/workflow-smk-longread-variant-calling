@@ -38,7 +38,7 @@ rule create_chromosome_short_callsets_fofn:
                 err_msg += f"cannot identify chromosome: {vcf}"
                 logerr(err_msg)
                 raise
-            unsorted_vcfs.append((idx, vcf))
+            unsorted_vcfs.append((this_idx, vcf))
         with open(output.fofn, "w") as fofn:
             for _, vcf in sorted(unsorted_vcfs):
                 _ = fofn.write(f"{vcf}\n")
