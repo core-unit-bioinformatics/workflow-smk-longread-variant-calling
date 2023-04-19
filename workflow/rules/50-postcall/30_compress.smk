@@ -24,7 +24,7 @@ rule compress_index_sv_callset:
         DIR_ENVS.joinpath("biotools.yaml")
     shell:
         "bgzip --keep --stdout --compress-level 9 "
-        "> {output.vcf}"
+        "{input.vcf} > {output.vcf}"
             " && "
         "bcftools tabix -p vcf -f {output.vcf}"
 
