@@ -17,8 +17,7 @@ run_hifi_aligner:
 
 run_hifi_sv_toolchain:
   - minimap2, cuteSV
-  - minimap2, sniffles
-  #- lra, sniffles
+  - lra, sniffles
 
 run_hifi_short_toolchain:
   - minimap2, DeepVariant
