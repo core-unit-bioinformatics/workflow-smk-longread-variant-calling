@@ -83,6 +83,7 @@ rule sv_call_cutesv_hifi:
             " && "
         "cuteSV -t {threads} -S {wildcards.sample} "
         "--report_readid "
+        "--genotype "
         "--max_cluster_bias_INS 1000 "
         "--diff_ratio_merging_INS 0.9 "
         "--max_cluster_bias_DEL 1000 "
