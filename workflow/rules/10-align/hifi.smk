@@ -51,25 +51,30 @@ rule align_minimap2_hifi:
         acc_in=lambda wildcards, input: register_input(input.reads),
         acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
-        "minimap2 -a -x map-hifi --MD --eqx -L -t {threads} "
+        "minimap2 -a -x map-hifi -p 0.8 --MD --eqx -L -t {threads} "
         " -R {params.readgroup} -N 1 {input.reference} "
-        " {input.reads} 2> {log.aln} | "
+        " {input.reads} 2> {log.aln}"
+            " | "
         " samtools view -u -h --output-unselected {output.exclude} "
-        " -F {params.sam_flag_out} --threads {params.sam_threads} | "
+        " -F {params.sam_flag_out} --threads {params.sam_threads}"
+            " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
         " --threads {params.sam_threads} "
         " -T {wildcards.sample}_{wildcards.path_id}_{wildcards.ref}_mm2 -o {output.sort} "
         " 2> {log.sam}"
-        " && "
+            " && "
         "samtools index -@ {threads} {output.sort}"
 
 
 rule align_lra_hifi:
     """
-    -at 0.8: Threshold to decide secondary alignments
+    NB: LRA does not support compressed input!
+
+    --alnthres 0.8: Threshold to decide secondary alignments
+        -- set to 0.8 to be closer to minimap2 settings
     -p s: Print alignment format 's' / sam
     --printMD: Write the MD tag in sam and paf output
-    -PrintNumAln 2: Print out at most 2 alignments for one read.
+    --PrintNumAln 2: Print out at most 2 alignments for one read.
     """
     input:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
@@ -113,13 +118,15 @@ rule align_lra_hifi:
         acc_in=lambda wildcards, input: register_input(input.reads),
         acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
-        "lra align -CCS -p s -t {threads} -at 0.8 "
-        " -PrintNumAln 2 --printMD "
-        " {input.reference} {input.reads} 2> {log.aln}"
+        "pigz -p {threads} -d -c {input.reads} "
+            " | "
+        "lra align -CCS -p s -t {threads} --alnthres 0.8 "
+        " --PrintNumAln 2 --printMD --refineBreakpoints "
+        " {input.reference} /dev/stdin 2> {log.aln}"
             " | "
         " samtools addreplacerg -m overwrite_all "
         " --threads {params.sam_threads} -r {params.readgroup} "
-        " -u  /dev/stdin"
+        " -u /dev/stdin"
             " | "
         " samtools view -u -h --output-unselected {output.exclude} "
         " -F {params.sam_flag_out}"
@@ -183,14 +190,16 @@ rule align_pbmm2_hifi:
     shell:
         "pbmm2 align --preset HiFi --strip -j {threads} "
         " --rg {params.readgroup} --best-n 2 --unmapped "
-        " {input.reference} {input.reads} 2> {log.aln} | "
+        " {input.reference} {input.reads} 2> {log.aln}"
+            " | "
         " samtools view -u -h --output-unselected {output.exclude} "
-        " -F {params.sam_flag_out} | "
+        " -F {params.sam_flag_out}"
+            " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
         " --threads {params.sam_threads} "
         " -T {wildcards.sample}_{wildcards.path_id}_{wildcards.ref}_pbmm2 -o {output.sort} "
         " 2> {log.sam}"
-        " && "
+            " && "
         "samtools index -@ {threads} {output.sort}"
 
 
