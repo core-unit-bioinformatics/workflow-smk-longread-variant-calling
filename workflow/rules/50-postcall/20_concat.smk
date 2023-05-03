@@ -85,10 +85,9 @@ rule run_concat_hifi_short_callsets:
         vcf = expand(
             DIR_RES.joinpath(
                 "callsets",
-                "{sample}_{read_type}.{short_calling_toolchain}.{ref}.{vartypes}.vcf.gz"
+                "{sample}_hifi.{short_calling_toolchain}.{ref}.{vartypes}.vcf.gz"
             ),
             sample=HIFI_SAMPLES,
-            read_type=["hifi"],
             short_calling_toolchain=HIFI_SHORT_CALLING_TOOLCHAIN_WILDCARDS,
             ref=USE_REF_GENOMES,
             vartypes=list(config["split_short_calls"].keys())
@@ -98,7 +97,7 @@ rule run_concat_hifi_short_callsets:
                 "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.{vartypes}.vcf-stats.txt"
             ),
             sample=HIFI_SAMPLES,
-            sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+            sv_calling_toolchain=HIFI_SHORT_CALLING_TOOLCHAIN_WILDCARDS,
             ref=USE_REF_GENOMES,
             vartypes=list(config["split_short_calls"].keys())
         ),
@@ -107,7 +106,7 @@ rule run_concat_hifi_short_callsets:
                 "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.{vartypes}.summary-stats.tsv"
             ),
             sample=HIFI_SAMPLES,
-            sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+            sv_calling_toolchain=HIFI_SHORT_CALLING_TOOLCHAIN_WILDCARDS,
             ref=USE_REF_GENOMES,
             vartypes=list(config["split_short_calls"].keys())
         ),
