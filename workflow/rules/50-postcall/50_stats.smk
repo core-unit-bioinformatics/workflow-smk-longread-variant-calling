@@ -21,6 +21,7 @@ rule compute_callset_summary_stats:
             " " if wildcards.variant_type == "sv" else
             f"--fix-variant-type {wildcards.variant_type} "
         ),
+        acc_out = lambda wildcards, output: register_result(output)
     shell:
         "{params.script} --vcf {input.vcf} {params.set_vtype} --output {output.tsv}"
 
@@ -41,5 +42,7 @@ rule compute_callset_vcf_statistics:
         DIR_ENVS.joinpath("biotools.yaml")
     resources:
         mem_mb=lambda wildcards, attempt: 1024 * attempt,
+    params:
+        acc_out = lambda wildcards, output: register_result(output)
     shell:
         "bcftools stats {input.vcf} > {output.txt}"
