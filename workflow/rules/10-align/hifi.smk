@@ -106,7 +106,7 @@ rule align_lra_hifi:
     threads: CPU_MEDIUM
     resources:
         mem_mb = lambda wildcards, input, attempt: input.size_mb + 4096 * attempt,
-        time_hrs = lambda wildcards, attempt: 2 + 2 * attempt,
+        time_hrs = lambda wildcards, attempt: 4 + 2 * attempt,
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
         readgroup = lambda wildcards: (
