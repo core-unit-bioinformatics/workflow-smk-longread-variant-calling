@@ -4,6 +4,7 @@ import argparse as argp
 import collections as col
 import pathlib as pl
 import re
+import sys
 
 import numpy as np
 import pandas as pd
@@ -301,25 +302,33 @@ def prepare_summary_statistics(count_stats, agg_stats):
 def main():
     args = parse_command_line()
     count_stats, agg_stats = collect_vcf_statistics(args.vcf, args.variant_type)
-    stats_summary = prepare_summary_statistics(count_stats, agg_stats)
+    if count_stats:
+        stats_summary = prepare_summary_statistics(count_stats, agg_stats)
 
-    df = pd.DataFrame.from_records(stats_summary, columns=STATS_TABLE_HEADER)
-    sorter = TableSorter(
-        df["location"].unique(),
-        df["filter_status"].unique(),
-        df["call_type"].unique(),
-        df["variant_type"].unique(),
-        df["attribute"].unique(),
-        df["statistic"].unique(),
-    )
-    df["sort_order"] = df.apply(sorter.get_order_number, axis=1)
-    df.sort_values("sort_order", ascending=True, inplace=True)
-    df.drop("sort_order", axis=1, inplace=True)
+        df = pd.DataFrame.from_records(stats_summary, columns=STATS_TABLE_HEADER)
+        sorter = TableSorter(
+            df["location"].unique(),
+            df["filter_status"].unique(),
+            df["call_type"].unique(),
+            df["variant_type"].unique(),
+            df["attribute"].unique(),
+            df["statistic"].unique(),
+        )
+        df["sort_order"] = df.apply(sorter.get_order_number, axis=1)
+        df.sort_values("sort_order", ascending=True, inplace=True)
+        df.drop("sort_order", axis=1, inplace=True)
 
-    args.output.parent.mkdir(exist_ok=True, parents=True)
-    with open(args.output, "w") as table:
-        _ = table.write(f"# {args.vcf.name}\n")
-        df.to_csv(table, header=True, index=False, sep="\t")
+        args.output.parent.mkdir(exist_ok=True, parents=True)
+        with open(args.output, "w") as table:
+            _ = table.write(f"# {args.vcf.name}\n")
+            df.to_csv(table, header=True, index=False, sep="\t")
+    else:
+        sys.stderr.write(f"WARNING - VCF is empty: {args.vcf.name}\n")
+        sys.stderr.write(f"Creating empty output file\n")
+        args.output.parent.mkdir(exist_ok=True, parents=True)
+        with open(args.output, "w") as table:
+            _ = table.write(f"# {args.vcf.name} - HAS NO RECORDS\n")
+            _ = table.write("\t".join(STATS_TABLE_HEADER) + "\n")
 
     return 0
 
