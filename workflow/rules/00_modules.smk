@@ -26,4 +26,5 @@ include: "50-postcall/30_compress.smk"
 include: "50-postcall/50_stats.smk"
 
 include: "99-outputs/align.smk"
+include: "99-outputs/coverage.smk"
 include: "99-outputs/calling.smk"
