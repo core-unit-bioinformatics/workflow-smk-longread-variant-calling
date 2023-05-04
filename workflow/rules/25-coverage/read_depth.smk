@@ -78,7 +78,7 @@ if HIFI_SAMPLES:
             md_ok = expand(
                 DIR_PROC.joinpath(
                     "25-coverage", "{sample}_hifi.{aligner}.{ref}.win.mq{mapq}",
-                    "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}.ok",
+                    "{sample}_hifi.{aligner}.{ref}.win.mq{mapq}.ok",
                 ),
                 sample=HIFI_SAMPLES,
                 aligner=HIFI_ALIGNER_WILDCARDS,
@@ -91,8 +91,8 @@ if HIFI_SAMPLES:
             input:
                 md_ok = expand(
                     DIR_PROC.joinpath(
-                        "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
-                        "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}.ok",
+                        "25-coverage", "{sample}_hifi.{aligner}.{ref}.{roi}.mq{mapq}",
+                        "{sample}_hifi.{aligner}.{ref}.{roi}.mq{mapq}.ok",
                     ),
                     sample=HIFI_SAMPLES,
                     aligner=HIFI_ALIGNER_WILDCARDS,
