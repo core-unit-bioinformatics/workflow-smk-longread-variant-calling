@@ -20,6 +20,38 @@ for key, value in user_ref_genomes.items():
 CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
 assert isinstance(CHROMOSOMES, list)
 
+#############################
+### Check if user-specified
+### ROI files are available
+#############################
+
+USER_ROI_FILES = dict()
+USER_ROI_FILE_WILDCARDS = []
+user_roi_config = config.get("user_roi", None)
+if user_roi_config is not None:
+    for label, roi_file in user_roi_config.items():
+        _path_to_roi = DIR_LOCAL_REF.joinpath(roi_file)
+        if not _path_to_roi.is_file():
+            err_msg = (
+                "ERROR processing user-specified ROI files.\n"
+                f"The file identified as >{label}< does not exist "
+                f"at location: {_path_to_roi}\n"
+                "Please copy the file to that folder."
+            )
+            logerr(err_msg)
+            raise ValueError(err_msg)
+        USER_ROI_FILES[label] = _path_to_roi
+        USER_ROI_FILE_WILDCARDS.append(label)
+
+
+###############################
+### SETTINGS FOR VARIOUS TOOLS
+###############################
+
+# Affects alignment
+# (reads are separated) and
+# mosdepth read depth calculation
+# ---
 # Default is (or-chained):
 # - read unmapped
 # - not primary alignment
@@ -28,6 +60,24 @@ assert isinstance(CHROMOSOMES, list)
 SAM_FLAG_EXCLUDE = config.get("sam_flag_exclude", 1796)
 assert isinstance(SAM_FLAG_EXCLUDE, int)
 
+MOSDEPTH_QUANTIZE_STEPS = config.get(
+    "mosdepth_quantize_steps", [0, 1, 5, 10, 15]
+).strip('"').strip("'")
+MOSDEPTH_QUANTIZE_NAMES = config.get(
+    "mosdepth_quantize_names",
+    ["NO_COV", "LOW_COV", "CALLABLE", "GOOD_COV", "HIGH_COV"]
+)
+MOSDEPTH_WINDOW_SIZE = config.get("mosdepth_window_size", 10000)
+assert isinstance(MOSDEPTH_WINDOW_SIZE, int)
+
+MOSDEPTH_COV_THRESHOLDS = config.get(
+    "mosdepth_cov_thresholds", [0, 1, 5, 10, 15]
+)
+
+MOSDEPTH_MIN_MAPQ = config.get(
+    "mosdepth_min_mapq", [0, 20]
+)
+assert all(isinstance(v, int) for v in MOSDEPTH_MIN_MAPQ)
 
 ###############################
 ### SETTINGS FOR HIFI ALIGNERS

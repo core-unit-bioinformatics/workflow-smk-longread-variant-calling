@@ -26,6 +26,49 @@ run_hifi_short_toolchain:
 ### GENERAL TOOL RUNTIME PARAMETERS
 ####################################
 
+### PARAMETERS FOR BASIC QC /
+### READ DEPTH COMPUTATION WITH MOSDEPTH
+
+# mosdepth window size and quantize_*
+# option apply to the whole-genome
+# setting
+mosdepth_window_size: 10000
+mosdepth_quantize_steps:
+  - 0
+  - 1
+  - 5
+  - 10
+  - 15
+mosdepth_quantize_names:
+  - NO_COV
+  - LOW_COV
+  - CALLABLE
+  - GOOD_COV
+  - HIGH_COV
+
+# mosdepth coverage thresholds
+# apply to user-supplied regions
+# of interest (QC regions) that
+# are expected to exhibit good
+# coverage
+mosdepth_cov_thresholds:
+  - 0
+  - 1
+  - 5
+  - 10
+  - 15
+
+
+# NB: this should be set to the
+# same value as for the long
+# variant calling (default: 20).
+# Adding 0 to the list enables
+# checking if a call could be
+# made at a lower MAPQ
+mosdepth_min_mapq:
+  - 0
+  - 20
+
 ### PARAMETERS FOR SHORT VARIANT CALLING
 
 # only v1.5.0+ supports low-error

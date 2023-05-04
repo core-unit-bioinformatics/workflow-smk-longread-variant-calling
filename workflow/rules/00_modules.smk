@@ -13,6 +13,9 @@ include: "10-align/pyutils.smk"
 include: "10-align/hifi.smk"
 include: "20-postalign/merge.smk"
 
+include: "25-coverage/pyutils.smk"
+include: "25-coverage/read_depth.smk"
+
 include: "30-callshort/hifi.smk"
 
 include: "40-callsv/hifi.smk"
