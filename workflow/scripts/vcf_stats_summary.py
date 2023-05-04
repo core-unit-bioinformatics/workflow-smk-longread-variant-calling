@@ -225,6 +225,8 @@ def collect_vcf_statistics(vcf_file, variant_type):
                     # size estimate can be totally off
                     varlen = -1
             quality = record.qual
+            if quality is None:
+                quality = -1
             vcf_samples = list(record.samples.keys())
             assert (
                 len(vcf_samples) == 1
@@ -262,7 +264,7 @@ def collect_vcf_statistics(vcf_file, variant_type):
 
 
 def prepare_summary_statistics(count_stats, agg_stats):
-
+    print(agg_stats)
     summary = []
     for key, value in count_stats.items():
         row = list(key)
