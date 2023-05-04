@@ -67,7 +67,7 @@ rule compute_read_depth_in_user_roi:
             " && "
         "mosdepth --use-median --mapq {params.min_mapq} --threads {threads} "
         "--by {input.user_roi} --no-per-base --flag {params.sam_flag_out} "
-        "{params.prefix} {input.bam}"
+        "--thresholds {params.thresholds} {params.prefix} {input.bam}"
             " && "
         "touch {output.check}"
 
