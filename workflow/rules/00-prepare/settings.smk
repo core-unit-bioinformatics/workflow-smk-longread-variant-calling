@@ -62,7 +62,7 @@ assert isinstance(SAM_FLAG_EXCLUDE, int)
 
 MOSDEPTH_QUANTIZE_STEPS = config.get(
     "mosdepth_quantize_steps", [0, 1, 5, 10, 15]
-).strip('"').strip("'")
+)
 MOSDEPTH_QUANTIZE_NAMES = config.get(
     "mosdepth_quantize_names",
     ["NO_COV", "LOW_COV", "CALLABLE", "GOOD_COV", "HIGH_COV"]
