@@ -61,8 +61,10 @@ def process_user_roi_files(user_roi_config, ref_genome_labels):
 
         # Because ROI files are usually stored in the project
         # repository, the user has to copy those files to the
-        # global reference folder
-        path_to_roi = DIR_GLOBAL_REF.joinpath(roi_file)
+        # local reference folder
+        # (not global s.t. reference containers can still
+        # be used at the same time)
+        path_to_roi = DIR_LOCAL_REF.joinpath(roi_file)
         if not path_to_roi.is_file():
             err_msg = (
                 "ERROR processing user-specified ROI files.\n"
