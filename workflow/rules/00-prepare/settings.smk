@@ -128,7 +128,7 @@ MOSDEPTH_COV_THRESHOLDS = config.get(
     "mosdepth_cov_thresholds", [0, 1, 5, 10, 15]
 )
 assert isinstance(MOSDEPTH_COV_THRESHOLDS, list)
-assert all(isinstance(v, int) for v in MOSDEPTH_MIN_MAPQ)
+assert all(isinstance(v, int) for v in MOSDEPTH_COV_THRESHOLDS)
 
 MOSDEPTH_MIN_MAPQ = config.get(
     "mosdepth_min_mapq", [0, 20]
