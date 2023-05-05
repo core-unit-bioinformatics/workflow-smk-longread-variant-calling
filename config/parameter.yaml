@@ -6,9 +6,11 @@ input_file_ext:
   - fa.gz
   - fna.gz
 
-reference_genomes:
-  t2tv2: GCA_009914755.4_T2T-CHM13v2.0.fasta
-  hg38: GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fasta
+# Set in project-specific
+# config - which reference
+# genomes to use?
+# reference_genomes:
+#   label: fasta_file_name
 
 run_hifi_aligner:
   - minimap2
@@ -33,12 +35,8 @@ run_hifi_short_toolchain:
 # option apply to the whole-genome
 # setting
 mosdepth_window_size: 10000
-mosdepth_quantize_steps:
-  - 0
-  - 1
-  - 5
-  - 10
-  - 15
+# MUST BE LISTS
+mosdepth_quantize_steps: [0, 1, 5, 10, 15]
 mosdepth_quantize_names:
   - NO_COV
   - LOW_COV
@@ -51,13 +49,8 @@ mosdepth_quantize_names:
 # of interest (QC regions) that
 # are expected to exhibit good
 # coverage
-mosdepth_cov_thresholds:
-  - 0
-  - 1
-  - 5
-  - 10
-  - 15
-
+# MUST BE A LIST
+mosdepth_cov_thresholds: [0, 1, 5, 10, 15]
 
 # NB: this should be set to the
 # same value as for the long
@@ -65,9 +58,9 @@ mosdepth_cov_thresholds:
 # Adding 0 to the list enables
 # checking if a call could be
 # made at a lower MAPQ
-mosdepth_min_mapq:
-  - 0
-  - 20
+# MUST BE A LIST
+mosdepth_min_mapq: [0, 20]
+
 
 ### PARAMETERS FOR SHORT VARIANT CALLING
 

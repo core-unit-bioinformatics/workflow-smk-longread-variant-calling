@@ -1,8 +1,12 @@
+# This config file exists as reference;
+# using reference containers is likely a
+# project-specific decision and should
+# thus be configured in the project config
 
-use_reference_container: True
+use_reference_container: False
 
 reference_container_names:
-  - ncbi-t2t-chm13hg002_v2_incl_chr_prefix
-  - ncbi-hg38-bwaidx_v0
+  - sif_file_name_1
+  - sif_file_name_2
 
 reference_container_store: /gpfs/project/projects/medbioinf/data/ref_container
