@@ -91,13 +91,12 @@ if HIFI_SAMPLES:
             input:
                 md_ok = expand(
                     DIR_PROC.joinpath(
-                        "25-coverage", "{sample}_hifi.{aligner}.{ref}.{roi}.mq{mapq}",
-                        "{sample}_hifi.{aligner}.{ref}.{roi}.mq{mapq}.ok",
+                        "25-coverage", "{sample}_hifi.{aligner}.{ref_roi_pair}.mq{mapq}",
+                        "{sample}_hifi.{aligner}.{ref_roi_pair}.mq{mapq}.ok",
                     ),
                     sample=HIFI_SAMPLES,
                     aligner=HIFI_ALIGNER_WILDCARDS,
-                    ref=USE_REF_GENOMES,
-                    roi=USER_ROI_FILE_WILDCARDS,
+                    ref_roi_pair=USER_ROI_FILE_WILDCARDS,
                     mapq=MOSDEPTH_MIN_MAPQ
                 )
 
@@ -120,12 +119,11 @@ if ONT_SAMPLES:
             input:
                 md_ok = expand(
                     DIR_PROC.joinpath(
-                        "25-coverage", "{sample}_ont.{aligner}.{ref}.{roi}.mq{mapq}",
-                        "{sample}_ont.{aligner}.{ref}.{roi}.mq{mapq}.ok",
+                        "25-coverage", "{sample}_ont.{aligner}.{ref_roi_pair}.mq{mapq}",
+                        "{sample}_ont.{aligner}.{ref_roi_pair}.mq{mapq}.ok",
                     ),
                     sample=ONT_SAMPLES,
                     aligner=ONT_ALIGNER_WILDCARDS,
-                    ref=USE_REF_GENOMES,
-                    roi=USER_ROI_FILE_WILDCARDS,
+                    ref_roi_pair=USER_ROI_FILE_WILDCARDS,
                     mapq=MOSDEPTH_MIN_MAPQ
                 )

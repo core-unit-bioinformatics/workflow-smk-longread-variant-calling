@@ -2,19 +2,19 @@ import sys
 
 # Prepare lookup structure for
 # reference genomes
-user_ref_genomes = config.get("reference_genomes", None)
-if user_ref_genomes is None:
+_user_ref_genomes = config.get("reference_genomes", None)
+if _user_ref_genomes is None:
     raise ValueError(f"Config does not contain key: 'reference_genomes'")
 REF_GENOMES = dict()
 USE_REF_GENOMES = []
-for key, value in user_ref_genomes.items():
-    _path_to_ref = DIR_GLOBAL_REF.joinpath(value)
-    REF_GENOMES[key] = _path_to_ref
+for _ref_label, _ref_file in _user_ref_genomes.items():
+    _path_to_ref = DIR_GLOBAL_REF.joinpath(ref_file)
+    REF_GENOMES[_ref_label] = _path_to_ref
     _ref_suffix = _path_to_ref.suffix
     _ref_fai_suffix = f"{_ref_suffix}.fai"
     _path_to_idx = _path_to_ref.with_suffix(_ref_fai_suffix)
-    REF_GENOMES[(key, "fai")] = _path_to_idx
-    USE_REF_GENOMES.append(key)
+    REF_GENOMES[(_ref_label, "fai")] = _path_to_idx
+    USE_REF_GENOMES.append(_ref_label)
 
 
 CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
@@ -23,25 +23,79 @@ assert isinstance(CHROMOSOMES, list)
 #############################
 ### Check if user-specified
 ### ROI files are available
+### and match with a known
+### genome reference
 #############################
+
+def process_user_roi_files(user_roi_config, ref_genome_labels):
+    """Utility function to encapsulate roi file
+    processing:
+    - is each ROI file available in the working dir?
+    - is each ROI paired with an existing genome reference?
+
+    Return:
+        list: (Snakemake) wildcards values of the form
+            <REF-LABEL>.<ROI-LABEL>
+        dict: lookup table to get the ROI file path by
+            ROI file label
+    """
+    roi_file_wildcards = []
+    roi_file_paths_by_label = dict()
+
+    for roi_label, (ref_label, roi_file) in user_roi_config.items():
+        if ref_label == "all":
+            pair_ref_labels = ref_genome_labels
+        elif ref_label == "any":
+            pair_ref_labels = ref_genome_labels[0]
+        elif ref_label not in ref_genome_labels:
+            err_msg = (
+                "ERROR processing user-specified ROI files.\n"
+                f"The ROI file labeled >{roi_label}< is relative "
+                f"to the genome reference labeled >{ref_label}<, "
+                f"but that reference label does not exist:\n"
+                f"Know reference labels: {sorted(ref_genome_labels)}\n"
+            )
+            raise ValueError(err_msg)
+        else:
+            pair_ref_labels = [ref_label]
+
+        # Because ROI files are usually stored in the project
+        # repository, the user has to copy those files to the
+        # global reference folder
+        path_to_roi = DIR_GLOBAL_REF.joinpath(roi_file)
+        if not path_to_roi.is_file():
+            err_msg = (
+                "ERROR processing user-specified ROI files.\n"
+                f"The file labeled >{roi_label}< does not exist "
+                f"at location: {path_to_roi}\n"
+                f"(Absolute path: {path_to_roi.resolve()})\n"
+                "Please copy the file to that folder."
+            )
+            raise ValueError(err_msg)
+        if roi_label in roi_file_paths_by_label:
+            err_msg = (
+                f"ERROR: the ROI file label >{roi_label}< "
+                "already exists and identifies this file:\n"
+                f"{roi_file_paths_by_label[roi_label]}"
+            )
+            raise ValueError(err_msg)
+        roi_file_paths_by_label[roi_label] = path_to_roi
+
+        for pair_ref in pair_ref_labels:
+            roi_file_wildcards.append(
+                f"{pair_ref}.{roi_label}"
+            )
+    roi_file_wildcards = sorted(set(roi_file_wildcards))
+    return roi_file_wildcards, roi_file_paths_by_label
+
 
 USER_ROI_FILES = dict()
 USER_ROI_FILE_WILDCARDS = []
-user_roi_config = config.get("user_roi", None)
-if user_roi_config is not None:
-    for label, roi_file in user_roi_config.items():
-        _path_to_roi = DIR_LOCAL_REF.joinpath(roi_file)
-        if not _path_to_roi.is_file():
-            err_msg = (
-                "ERROR processing user-specified ROI files.\n"
-                f"The file identified as >{label}< does not exist "
-                f"at location: {_path_to_roi}\n"
-                "Please copy the file to that folder."
-            )
-            logerr(err_msg)
-            raise ValueError(err_msg)
-        USER_ROI_FILES[label] = _path_to_roi
-        USER_ROI_FILE_WILDCARDS.append(label)
+_user_roi_config = config.get("user_roi", None)
+if _user_roi_config is not None:
+    USER_ROI_FILE_WILDCARDS, USER_ROI_FILES = process_user_roi_files(
+        _user_roi_config, USE_REF_GENOMES
+    )
 
 
 ###############################
@@ -73,6 +127,8 @@ assert isinstance(MOSDEPTH_WINDOW_SIZE, int)
 MOSDEPTH_COV_THRESHOLDS = config.get(
     "mosdepth_cov_thresholds", [0, 1, 5, 10, 15]
 )
+assert isinstance(MOSDEPTH_COV_THRESHOLDS, list)
+assert all(isinstance(v, int) for v in MOSDEPTH_MIN_MAPQ)
 
 MOSDEPTH_MIN_MAPQ = config.get(
     "mosdepth_min_mapq", [0, 20]
