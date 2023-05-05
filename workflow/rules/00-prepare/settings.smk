@@ -8,7 +8,7 @@ if _user_ref_genomes is None:
 REF_GENOMES = dict()
 USE_REF_GENOMES = []
 for _ref_label, _ref_file in _user_ref_genomes.items():
-    _path_to_ref = DIR_GLOBAL_REF.joinpath(ref_file)
+    _path_to_ref = DIR_GLOBAL_REF.joinpath(_ref_file)
     REF_GENOMES[_ref_label] = _path_to_ref
     _ref_suffix = _path_to_ref.suffix
     _ref_fai_suffix = f"{_ref_suffix}.fai"
