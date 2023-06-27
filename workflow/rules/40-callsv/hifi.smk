@@ -89,7 +89,6 @@ rule sv_call_cutesv_hifi:
         "--max_cluster_bias_DEL 1000 "
         "--diff_ratio_merging_DEL 0.5 "
         "--min_size {params.min_sv_len} "
-        "--max_size -1 "
         "--min_mapq {params.min_mapq} "
         "--min_read_len {params.min_aln_len} "
         "--min_support {params.min_cov} "
