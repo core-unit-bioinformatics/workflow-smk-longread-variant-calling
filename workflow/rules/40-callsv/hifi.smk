@@ -106,8 +106,6 @@ rule sv_discover_pbsv_hifi:
             "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
         bai = DIR_PROC.joinpath(
             "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"),
-        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
-        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
         svsig = temp(DIR_PROC.joinpath(
             "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.{chrom}.svsig.gz"
@@ -159,13 +157,10 @@ rule sv_call_pbsv_hifi:
         time_hrs = lambda wildcards, attempt: attempt
     params:
         min_sv_len = MIN_SV_LEN_CALL,
-        min_mapq = MIN_MAPQ,
-        min_cov = MIN_COV,
-        min_aln_len = MIN_ALN_LEN
     shell:
         'pbsv call -j {threads} --hifi '
         '--min-sv-length {params.min_sv_len} '
-        '{input.reference} {input.svsig} {output.vcf} &> {log}'
+        '{input.ref} {input.svsig} {output.vcf} &> {log}'
 
 
 rule run_pbsv_hifi_sv_calling:
