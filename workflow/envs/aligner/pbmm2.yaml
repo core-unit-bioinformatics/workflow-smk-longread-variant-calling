@@ -1,4 +1,4 @@
 name: pbmm2
 dependencies:
-  - pbmm2=1.10.0
+  - pbmm2=1.12.0
   - samtools=1.16.1

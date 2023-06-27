@@ -15,11 +15,11 @@ input_file_ext:
 run_hifi_aligner:
   - minimap2
   - pbmm2
-  - lra
 
 run_hifi_sv_toolchain:
   - minimap2, cuteSV
-  - lra, sniffles
+  - minimap2, sniffles
+  - pbmm2, pbsv
 
 run_hifi_short_toolchain:
   - minimap2, DeepVariant

@@ -96,6 +96,90 @@ rule sv_call_cutesv_hifi:
         " ; rm -rfd {params.tmp_wd}"
 
 
+rule sv_discover_pbsv_hifi:
+    """
+    In exceptional cases, pbsv discover requires a comparatively large
+    amount of memory (~3 times of avg.)
+    """
+    input:
+        bam = DIR_PROC.joinpath(
+            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
+        bai = DIR_PROC.joinpath(
+            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"),
+        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+    output:
+        svsig = temp(DIR_PROC.joinpath(
+            "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.{chrom}.svsig.gz"
+        )),
+
+    log:
+        DIR_LOG.joinpath(
+            "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.{chrom}.discover.log"
+        ),
+    benchmark:
+        DIR_RSRC.joinpath(
+            "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.{chrom}.discover.rsrc"
+        ),
+    conda:
+        DIR_ENVS.joinpath("caller", "pbsv.yaml")
+    resources:
+        mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt * attempt,
+        time_hrs = lambda wildcards, attempt: attempt
+    params:
+        min_sv_len = MIN_SV_LEN_CALL,
+        min_mapq = MIN_MAPQ,
+    shell:
+        'pbsv discover --hifi --region {wildcards.chrom} '
+        '--min-mapq {params.min_mapq} '
+        '--min-svsig-length {params.min_sv_len} '
+        '{input.bam} {output.svsig} &> {log}'
+
+
+rule sv_call_pbsv_hifi:
+    input:
+        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+
+        svsig = expand(DIR_PROC.joinpath(
+            "40-callsv", "{{sample}}_hifi.{{aligner}}-pbsv.{{ref}}.{chrom}.svsig.gz"),
+            chrom=CHROMOSOMES
+        )
+    output:
+        vcf = DIR_PROC.joinpath("40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.vcf"),
+    log:
+        DIR_LOG.joinpath("40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.call.log"),
+    benchmark:
+        DIR_RSRC.joinpath("40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.call.rsrc"),
+    conda:
+        DIR_ENVS.joinpath("caller", "pbsv.yaml")
+    threads: CPU_MEDIUM
+    resources:
+        mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt
+    params:
+        min_sv_len = MIN_SV_LEN_CALL,
+        min_mapq = MIN_MAPQ,
+        min_cov = MIN_COV,
+        min_aln_len = MIN_ALN_LEN
+    shell:
+        'pbsv call -j {threads} --hifi '
+        '--min-sv-length {params.min_sv_len} '
+        '{input.reference} {input.svsig} {output.vcf} &> {log}'
+
+
+rule run_pbsv_hifi_sv_calling:
+    input:
+        vcf = expand(
+            DIR_PROC.joinpath(
+                "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.vcf"
+            ),
+            sample=HIFI_SAMPLES,
+            aligner=ALIGNER_FOR_CALLER[("pbsv", "hifi")],
+            ref=USE_REF_GENOMES
+        )
+
+
 rule run_sniffles_hifi_sv_calling:
     input:
         vcf = expand(

@@ -1,7 +1,8 @@
 
 ### GENERAL RUNTIME PARAMETERS
 # FOR CALLERS THAT CAN BATCH-PROCESS
-# BY CHROMOSOME (e.g., DeepVariant)
+# BY CHROMOSOME (e.g., DeepVariant
+# or pbsv)
 
 call_chromosomes:
   - chr1
@@ -27,3 +28,4 @@ call_chromosomes:
   - chr21
   - chr22
   - chrX
+  - chrY
