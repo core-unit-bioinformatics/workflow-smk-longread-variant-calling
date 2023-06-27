@@ -203,7 +203,8 @@ MIN_ALN_LEN = int(config["minimum_alignment_length"])
 
 HIFI_SV_CALLER_NAME_MAPPING = {
     "sniffles": "sniffles",
-    "cutesv": "cutesv"
+    "cutesv": "cutesv",
+    "pbsv": "pbsv"
 }
 
 ###########################################
