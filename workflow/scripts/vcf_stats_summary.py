@@ -212,6 +212,13 @@ def collect_vcf_statistics(vcf_file, variant_type):
                     )
             try:
                 varlen = abs(record.info["SVLEN"])
+            except TypeError:
+                # this fix was introduced after adding pbsv as a caller;
+                # totally unclear why the SVLEN record is parsed as a tuple
+                # despite representing a single ALT allele
+                assert isinstance(record.info["SVLEN"], tuple)
+                assert len(record.info["SVLEN"]) == 1
+                varlen = abs(record.info["SVLEN"][0])
             except KeyError:
                 ref_length = len(record.ref)
                 assert ref_length > 0
@@ -269,7 +276,7 @@ def collect_vcf_statistics(vcf_file, variant_type):
 
 
 def prepare_summary_statistics(count_stats, agg_stats):
-    print(agg_stats)
+
     summary = []
     for key, value in count_stats.items():
         row = list(key)
