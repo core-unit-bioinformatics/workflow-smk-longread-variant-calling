@@ -224,6 +224,11 @@ def collect_vcf_statistics(vcf_file, variant_type):
                     # ALTs have different length, so any
                     # size estimate can be totally off
                     varlen = -1
+            except:
+                sys.stderr.write("\nERROR processing VCF record:\n")
+                sys.stderr.write(f"{record}\n")
+                sys.stderr.write(f"{record.info}\n")
+                raise
             quality = record.qual
             if quality is None:
                 quality = -1
