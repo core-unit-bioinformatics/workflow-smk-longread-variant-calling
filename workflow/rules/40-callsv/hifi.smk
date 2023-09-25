@@ -1,5 +1,15 @@
 
 rule sv_call_sniffles_hifi:
+    """TODO check
+    based on this statement
+    https://github.com/fritzsedlazeck/Sniffles/issues/123#issuecomment-460705150
+    the "-s" parameter determines
+    the read support threshold for a call;
+    Since there is no "-s" parameter in current version,
+    that probably refers to the parameter
+    "--minsupport [default: auto]"
+    Check if that makes a difference
+    """
     input:
         bam = DIR_PROC.joinpath(
             "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
