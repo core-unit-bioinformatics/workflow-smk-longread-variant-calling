@@ -201,15 +201,27 @@ MIN_MAPQ = int(config["minimum_mapq"])
 MIN_COV = int(config["minimum_coverage"])
 MIN_ALN_LEN = int(config["minimum_alignment_length"])
 
+###########################################
+### SETTINGS FOR SNIFFLES2 ONLY
+###########################################
+
+RUN_SNIFFLES_MOSAIC_MODE = config.get("run_sniffles_mosaic_mode", False)
+assert isinstance(RUN_SNIFFLES_MOSAIC_MODE, bool)
+
+RUN_SNIFFLES_MULTISAMPLE_MODE = config.get("run_sniffles_multisample_mode", False)
+assert isinstance(RUN_SNIFFLES_MULTISAMPLE_MODE, bool)
+SNIFFLES_MULTISAMPLE_SETS = config.get("sniffles_multisample_sets", dict())
+
+###########################################
+### SETTINGS FOR HIFI SV CALLING TOOLCHAIN
+### THIS IS A GLOBAL CONTROL SWITCH/SETTING
+###########################################
+
 HIFI_SV_CALLER_NAME_MAPPING = {
     "sniffles": "sniffles",
     "cutesv": "cutesv",
     "pbsv": "pbsv"
 }
-
-###########################################
-### SETTINGS FOR HIFI SV CALLING TOOLCHAIN
-###########################################
 
 RUN_HIFI_SV_CALLING_TOOLCHAIN = config.get("run_hifi_sv_toolchain", [])
 if not RUN_HIFI_SV_CALLING_TOOLCHAIN and VERBOSE:
@@ -224,4 +236,9 @@ for toolchain in RUN_HIFI_SV_CALLING_TOOLCHAIN:
     HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS.append(
         f"{wildcard_aln}-{wildcard_call}"
     )
+    ### SPECIAL CASE FOR SNIFFLES - ADD MOSAIC MODE?
+    if RUN_SNIFFLES_MOSAIC_MODE:
+        HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS.append(
+            f"{wildcard_aln}-{wildcard_call}.mosaic"
+        )
     ALIGNER_FOR_CALLER[(wildcard_call, "hifi")].append(wildcard_aln)

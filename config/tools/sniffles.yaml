@@ -1,0 +1,18 @@
+# EXAMPLE
+# project- or sample-specific config options;
+# should not be hard-coded in the workflow
+# repository
+
+### Sniffles2-specific options
+# run_sniffles_mosaic_mode: True / False
+#
+# run_sniffles_multisample_mode: True / False
+# sniffles_multisample_sets:
+#   JOINED_ID_1:
+#     - sampleA
+#     - sampleB
+#     - sampleC
+#   JOINED_ID_2:
+#     - sampleD
+#     - sampleE
+#     - sampleF
