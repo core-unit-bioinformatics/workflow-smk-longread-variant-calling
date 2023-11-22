@@ -238,7 +238,7 @@ for toolchain in RUN_HIFI_SV_CALLING_TOOLCHAIN:
         f"{wildcard_aln}-{wildcard_call}"
     )
     ### SPECIAL CASE FOR SNIFFLES - ADD MOSAIC MODE?
-    if RUN_SNIFFLES_MOSAIC_MODE:
+    if RUN_SNIFFLES_MOSAIC_MODE and wildcard_call == "sniffles":
         HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS.append(
             f"{wildcard_aln}-{wildcard_call}.mosaic"
         )
