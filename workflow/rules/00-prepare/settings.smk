@@ -15,6 +15,7 @@ for _ref_label, _ref_file in _user_ref_genomes.items():
     _path_to_idx = _path_to_ref.with_suffix(_ref_fai_suffix)
     REF_GENOMES[(_ref_label, "fai")] = _path_to_idx
     USE_REF_GENOMES.append(_ref_label)
+CONSTRAINT_REF_GENOMES = "(" + "|".join(USE_REF_GENOMES) + ")"
 
 
 CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
