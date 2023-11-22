@@ -73,6 +73,8 @@ rule sv_call_sniffles_mosaic_hifi:
         DIR_LOG.joinpath("40-callsv", "{sample}_hifi.{aligner}-sniffles.mosaic.{ref}.log")
     benchmark:
         DIR_RSRC.joinpath("40-callsv", "{sample}_hifi.{aligner}-sniffles.mosaic.{ref}.rsrc")
+    wildcard_constraints:
+        ref=CONSTRAINT_REF_GENOMES
     conda:
         DIR_ENVS.joinpath("caller", "sniffles.yaml")
     threads: CPU_MEDIUM
