@@ -41,7 +41,7 @@ rule sv_call_sniffles_hifi:
         min_aln_len = MIN_ALN_LEN
     shell:
         "sniffles --threads {threads} --no-progress --allow-overwrite "
-        "--output-rnames "
+        "--output-rnames --sample-id {wildcards.sample} "
         "--minsvlen {params.min_sv_len} "
         "--qc-coverage {params.min_cov} "
         "--mapq {params.min_mapq} "
@@ -88,7 +88,7 @@ rule sv_call_sniffles_mosaic_hifi:
         min_aln_len = MIN_ALN_LEN
     shell:
         "sniffles --threads {threads} --no-progress --allow-overwrite "
-        "--output-rnames --mosaic "
+        "--output-rnames --mosaic --sample-id {wildcards.sample} "
         "--minsvlen {params.min_sv_len} "
         "--qc-coverage {params.min_cov} "
         "--mapq {params.min_mapq} "
