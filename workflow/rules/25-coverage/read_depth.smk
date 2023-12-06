@@ -11,10 +11,10 @@ rule compute_read_depth_in_windows:
             "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}.ok",
         ),  # check output - convenience for prefix generation; see below
         collect = multiext(
-            DIR_PROC.joinpath(
+            str(DIR_PROC.joinpath(
                 "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}",
                 "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}",
-            ),
+            )),
             ".mosdepth.global.dist.txt", ".mosdepth.region.dist.txt", ".mosdepth.summary.txt",
             ".quantized.bed.gz", ".quantized.bed.gz.csi",
             ".regions.bed.gz", ".regions.bed.gz.csi"
@@ -60,10 +60,10 @@ rule compute_read_depth_in_user_roi:
             "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}.ok",
         ),
         collect = multiext(
-            DIR_PROC.joinpath(
+            str(DIR_PROC.joinpath(
                 "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
                 "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
-            ),
+            )),
             ".mosdepth.global.dist.txt", ".mosdepth.region.dist.txt", ".mosdepth.summary.txt",
             ".quantized.bed.gz", ".quantized.bed.gz.csi",
             ".regions.bed.gz", ".regions.bed.gz.csi"
