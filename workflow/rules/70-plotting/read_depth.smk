@@ -22,6 +22,7 @@ if HIFI_SAMPLES:
             pdf = expand(
                 rules.plot_mosdepth_agg_window_coverage.output.pdf,
                 sample=HIFI_SAMPLES,
+                read_type=["hifi"],
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
@@ -30,11 +31,12 @@ if HIFI_SAMPLES:
 
 
 if ONT_SAMPLES:
-    rule plot_agg_window_genome_ont_read_depth:
+    rule plot_agg_window_ont_read_depth:
         input:
             pdf = expand(
                 rules.plot_mosdepth_agg_window_coverage.output.pdf,
                 sample=ONT_SAMPLES,
+                read_type=["ont"],
                 aligner=ONT_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
