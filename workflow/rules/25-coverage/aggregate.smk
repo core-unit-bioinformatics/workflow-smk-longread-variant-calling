@@ -87,6 +87,7 @@ if HIFI_SAMPLES:
             agg = expand(
                 rules.aggregate_mosdepth_windowed_coverage.output.tsv,
                 sample=HIFI_SAMPLES,
+                read_type=["hifi"],
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
@@ -100,6 +101,7 @@ if ONT_SAMPLES:
             agg = expand(
                 rules.aggregate_mosdepth_windowed_coverage.output.tsv,
                 sample=HIFI_SAMPLES,
+                read_type=["ont"],
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
