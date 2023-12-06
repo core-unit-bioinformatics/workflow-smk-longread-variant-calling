@@ -102,14 +102,6 @@ if HIFI_SAMPLES:
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ
-            ),
-            agg = expand(
-                rules.aggregate_mosdepth_windowed_coverage.output.tsv,
-                sample=HIFI_SAMPLES,
-                aligner=HIFI_ALIGNER_WILDCARDS,
-                ref=USE_REF_GENOMES,
-                mapq=MOSDEPTH_MIN_MAPQ,
-                mrg_win=["1M"]
             )
 
     if USER_ROI_FILE_WILDCARDS:
