@@ -18,6 +18,8 @@ rule aggregate_mosdepth_windowed_coverage:
         import numpy as np
         import pandas as pd
 
+        mrg_win = int(params.merge_window)
+
         def chrom_sort_order(chrom):
             try:
                 order_num = int(chrom.strip("chr"))
@@ -43,7 +45,7 @@ rule aggregate_mosdepth_windowed_coverage:
         # stored in output
         global_median_cov = int(df["coverage"].median())
         # compute how many windows to merge/aggregate
-        steps_per_window = int(params.merge_window / (df.loc[0, "end"] - df.loc[0, "start"]))
+        steps_per_window = mrg_win / (df.loc[0, "end"] - df.loc[0, "start"]))
 
         wg_cov = []
         for (sort_order, chrom), cov_windows in df.groupby(["sort_order", "chrom"]):
@@ -51,7 +53,7 @@ rule aggregate_mosdepth_windowed_coverage:
                 continue
             # reset index to avoid offsetting cut_idx - see below
             chrom_windows = cov_windows.reset_index(drop=True, inplace=False)
-            find_overhang = chrom_windows["end"].max() // merge_window * merge_window
+            find_overhang = chrom_windows["end"].max() // mrg_win * mrg_win
             cut_idx = (chrom_windows["end"] == find_overhang).idxmax() + 1
             cov_values = chrom_windows["coverage"].values[:cut_idx]
             cov_values = np.reshape(cov_values, (-1, steps_per_window))
@@ -62,8 +64,8 @@ rule aggregate_mosdepth_windowed_coverage:
                     (chrom, sort_order, win_idx, start, end) for win_idx, start, end in
                     zip(
                         range(0,median_cov.size),
-                        range(0, median_cov.size * merge_window, merge_window),
-                        range(merge_window, median_cov.size * merge_window + merge_window, merge_window),
+                        range(0, median_cov.size * mrg_win, mrg_win),
+                        range(mrg_win, median_cov.size * mrg_win + mrg_win, mrg_win),
                     )
                 ],
                 names=["chrom", "sort_order", "win_idx", "start", "stop"]
