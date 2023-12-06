@@ -45,7 +45,7 @@ rule aggregate_mosdepth_windowed_coverage:
         # stored in output
         global_median_cov = int(df["coverage"].median())
         # compute how many windows to merge/aggregate
-        steps_per_window = mrg_win / (df.loc[0, "end"] - df.loc[0, "start"]))
+        steps_per_window = mrg_win / (df.loc[0, "end"] - df.loc[0, "start"])
 
         wg_cov = []
         for (sort_order, chrom), cov_windows in df.groupby(["sort_order", "chrom"]):
