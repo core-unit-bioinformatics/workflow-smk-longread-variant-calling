@@ -9,6 +9,15 @@ rule compute_read_depth_in_windows:
         check = DIR_PROC.joinpath(
             "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}",
             "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}.ok",
+        ),  # check output - convenience for prefix generation; see below
+        collect = multiext(
+            DIR_PROC.joinpath(
+                "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}",
+                "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}",
+            ),
+            ".mosdepth.global.dist.txt", ".mosdepth.region.dist.txt", ".mosdepth.summary.txt",
+            ".quantized.bed.gz", ".quantized.bed.gz.csi",
+            ".regions.bed.gz", ".regions.bed.gz.csi"
         )
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
@@ -49,6 +58,15 @@ rule compute_read_depth_in_user_roi:
         check = DIR_PROC.joinpath(
             "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
             "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}.ok",
+        ),
+        collect = multiext(
+            DIR_PROC.joinpath(
+                "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
+                "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
+            ),
+            ".mosdepth.global.dist.txt", ".mosdepth.region.dist.txt", ".mosdepth.summary.txt",
+            ".quantized.bed.gz", ".quantized.bed.gz.csi",
+            ".regions.bed.gz", ".regions.bed.gz.csi"
         )
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
@@ -84,6 +102,14 @@ if HIFI_SAMPLES:
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ
+            ),
+            agg = expand(
+                rules.aggregate_mosdepth_windowed_coverage.output.tsv,
+                sample=HIFI_SAMPLES,
+                aligner=HIFI_ALIGNER_WILDCARDS,
+                ref=USE_REF_GENOMES,
+                mapq=MOSDEPTH_MIN_MAPQ,
+                mrg_win=["1M"]
             )
 
     if USER_ROI_FILE_WILDCARDS:
