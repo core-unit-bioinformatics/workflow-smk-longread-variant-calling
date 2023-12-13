@@ -1,0 +1,11 @@
+
+# TODO - defaults provided by PacBio --- keep in wf repo?
+cn_aux_files:
+  hg38:
+    cn_noise: cnv.excluded_regions.common_50.hg38.bed.gz
+    _cn_noise_source: github.com/PacificBiosciences/HiFiCNV/raw/main/data/excluded_regions/cnv.excluded_regions.common_50.hg38.bed.gz
+    cn_expect:
+      female: expected_cn.hg38.XX.bed
+      _cn_expect_female_source: github.com/PacificBiosciences/HiFiCNV/raw/main/data/expected_cn/expected_cn.hg38.XX.bed
+      male: expected_cn.hg38.XY.bed
+      _cn_expect_male_source: github.com/PacificBiosciences/HiFiCNV/raw/main/data/expected_cn/expected_cn.hg38.XY.bed

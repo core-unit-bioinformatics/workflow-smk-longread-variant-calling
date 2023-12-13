@@ -21,6 +21,9 @@ run_hifi_sv_toolchain:
   - minimap2, sniffles
   - pbmm2, pbsv
 
+run_hifi_cnv_toolchain:
+  - pbmm2, hificnv
+
 run_hifi_short_toolchain:
   - minimap2, DeepVariant
 

@@ -1,6 +1,8 @@
 import pandas
 
 SAMPLES = None
+# TODO - for future update
+SAMPLE_SEX = None
 
 HIFI_SAMPLES = []
 ONT_SAMPLES = []
@@ -28,6 +30,10 @@ def process_sample_sheet():
 
     global SAMPLES
     SAMPLES = all_samples
+
+    # TODO - for future update
+    global SAMPLE_SEX
+    SAMPLE_SEX = dict()
 
     global MAP_SAMPLE_TO_INPUT_FILES
     MAP_SAMPLE_TO_INPUT_FILES = sample_input
