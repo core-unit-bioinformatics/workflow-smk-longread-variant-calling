@@ -37,7 +37,7 @@ rule cnv_calling_pbcnv:
     params:
         outprefix = lambda wildcards, output: pathlib.Path(output.check).parent
     shell:
-        "hificnv --ref {input.ref} --bam {input.bam} --exclude {input.noise} "
+        "hificnv --ref {input.ref} --bam {input.bam} --exclude {input.cn_noise} "
         "--expected-cn {input.cn_expect} --threads {threads} "
         "--output-prefix {params.outprefix} &> {log}"
             " && "
