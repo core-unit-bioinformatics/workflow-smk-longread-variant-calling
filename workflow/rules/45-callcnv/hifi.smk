@@ -47,7 +47,7 @@ rule cnv_calling_pbcnv:
 rule run_all_cnv_calling_pbcnv:
     input:
         ok = expand(
-            rules.cnv_calling_hificnv.output.check,
+            rules.cnv_calling_pbcnv.output.check,
             sample=HIFI_SAMPLES,
             aligner=ALIGNER_FOR_CALLER[("pbcnv", "hifi")],
             ref=["hg38"]
