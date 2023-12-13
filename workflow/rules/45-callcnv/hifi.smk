@@ -35,7 +35,7 @@ rule cnv_calling_pbcnv:
         mem_mb = lambda wildcards, attempt: 24576 * attempt,
         time_hrs = lambda wildcards, attempt: attempt
     params:
-        outprefix = lambda wildcards: pathlib.Path(output.check).parent
+        outprefix = lambda wildcards, output: pathlib.Path(output.check).parent
     shell:
         "hificnv --ref {input.ref} --bam {input.bam} --exclude {input.noise} "
         "--expected-cn {input.cn_expect} --threads {threads} "
