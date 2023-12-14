@@ -31,9 +31,15 @@ def process_sample_sheet():
     global SAMPLES
     SAMPLES = all_samples
 
-    # TODO - for future update
+    # sample sex strongly suggested for pbcnv/hificnv,
+    # may be used in future updates for DeepVariant as well
     global SAMPLE_SEX
     SAMPLE_SEX = dict()
+    for row in SAMPLE_SHEET.itertuples():
+        if hasattr(row, "sex"):
+            SAMPLE_SEX[row.sample] = row.sex
+        else:
+            SAMPLE_SEX[row.sample] = "any"
 
     global MAP_SAMPLE_TO_INPUT_FILES
     MAP_SAMPLE_TO_INPUT_FILES = sample_input
