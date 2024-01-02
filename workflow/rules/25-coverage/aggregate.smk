@@ -13,7 +13,10 @@ rule aggregate_mosdepth_windowed_coverage:
     resources:
         mem_mb=lambda wildcards, attempt: 1024 * attempt
     params:
-        merge_window=lambda wildcards: {"1M": int(1e6)}[wildcards.mrg_win]  # TODO make function
+        merge_window=lambda wildcards: {
+            "1M": int(1e6),
+            "100k": int(1e5)
+        }[wildcards.mrg_win]  # TODO make function
     run:
         import numpy as np
         import pandas as pd
@@ -93,7 +96,7 @@ if HIFI_SAMPLES:
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
-                mrg_win=["1M"]
+                mrg_win=["1M", "100k"]
             )
 
 
@@ -107,5 +110,5 @@ if ONT_SAMPLES:
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
-                mrg_win=["1M"]
+                mrg_win=["1M", "100k"]
             )

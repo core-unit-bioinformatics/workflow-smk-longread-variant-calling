@@ -26,8 +26,8 @@ if HIFI_SAMPLES:
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
-                mrg_win=["1M"]
-            )
+                mrg_win=["1M", "100k"]
+            )  # TODO --- mrg_win should be parameter
 
 
 if ONT_SAMPLES:
@@ -40,5 +40,5 @@ if ONT_SAMPLES:
                 aligner=ONT_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
-                mrg_win=["1M"]
+                mrg_win=["1M", "100k"]
             )
