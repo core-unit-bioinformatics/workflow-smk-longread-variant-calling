@@ -9,3 +9,8 @@ cn_aux_files:
       _cn_expect_female_source: github.com/PacificBiosciences/HiFiCNV/raw/main/data/expected_cn/expected_cn.hg38.XX.bed
       male: expected_cn.hg38.XY.bed
       _cn_expect_male_source: github.com/PacificBiosciences/HiFiCNV/raw/main/data/expected_cn/expected_cn.hg38.XY.bed
+  t2tv2:
+    cn_noise: cnv.excluded_regions.T2T.bed.gz
+    cn_expect:
+      female: expected_cn.T2T.XX.bed
+      male: expected_cn.T2T.XY.bed

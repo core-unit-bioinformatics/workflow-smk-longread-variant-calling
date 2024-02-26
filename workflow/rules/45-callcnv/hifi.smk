@@ -61,5 +61,5 @@ rule run_all_cnv_calling_pbcnv:
             rules.cnv_calling_pbcnv.output.copynum,
             sample=HIFI_SAMPLES,
             aligner=ALIGNER_FOR_CALLER[("pbcnv", "hifi")],
-            ref=["hg38"]
-        )  # DEBUG for now: only aux files source is hg38
+            ref=USE_REF_GENOMES
+        )
