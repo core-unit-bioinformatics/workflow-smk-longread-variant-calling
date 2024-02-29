@@ -11,11 +11,15 @@ rule cnv_calling_pbcnv:
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
         cn_noise = lambda wildcards: load_cn_aux_file(wildcards.ref, wildcards.sample, "noise"),
         cn_expect = lambda wildcards: load_cn_aux_file(wildcards.ref, wildcards.sample, "expect"),
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"
+        bam = expand(
+            rules.split_merged_alignments.output.main,
+            read_type="hifi",
+            allow_missing=True
         ),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"
+        bai = expand(
+            rules.split_merged_alignments.output.main_bai,
+            read_type="hifi",
+            allow_missing=True
         ),
     output:
         copynum = DIR_PROC.joinpath(

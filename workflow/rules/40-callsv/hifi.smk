@@ -9,12 +9,21 @@ rule sv_call_sniffles_hifi:
     that probably refers to the parameter
     "--minsupport [default: auto]"
     Check if that makes a difference
+
+    2024-02-29 added parameter --minsupport for rerun;
+    remove again if number of calls drops substantially
     """
     input:
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"),
+        bam = expand(
+            rules.split_merged_alignments.output.main,
+            read_type="hifi",
+            allow_missing=True
+        ),
+        bai = expand(
+            rules.split_merged_alignments.output.main_bai,
+            read_type="hifi",
+            allow_missing=True
+        ),
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
@@ -43,6 +52,7 @@ rule sv_call_sniffles_hifi:
         "sniffles --threads {threads} --no-progress --allow-overwrite "
         "--output-rnames --sample-id {wildcards.sample} "
         "--minsvlen {params.min_sv_len} "
+        "--minsupport {params.min_cov} "
         "--qc-coverage {params.min_cov} "
         "--mapq {params.min_mapq} "
         "--min-alignment-length {params.min_aln_len} "
@@ -56,10 +66,16 @@ rule sv_call_sniffles_mosaic_hifi:
     """
     """
     input:
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"),
+        bam = expand(
+            rules.split_merged_alignments.output.main,
+            read_type="hifi",
+            allow_missing=True
+        ),
+        bai = expand(
+            rules.split_merged_alignments.output.main_bai,
+            read_type="hifi",
+            allow_missing=True
+        ),
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
@@ -109,10 +125,16 @@ rule sv_call_cutesv_hifi:
 
     """
     input:
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"),
+        bam = expand(
+            rules.split_merged_alignments.output.main,
+            read_type="hifi",
+            allow_missing=True
+        ),
+        bai = expand(
+            rules.split_merged_alignments.output.main_bai,
+            read_type="hifi",
+            allow_missing=True
+        ),
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
@@ -159,10 +181,16 @@ rule sv_discover_pbsv_hifi:
     amount of memory (~3 times of avg.)
     """
     input:
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_hifi.{aligner}.{ref}.sort.bam.bai"),
+        bam = expand(
+            rules.split_merged_alignments.output.main,
+            read_type="hifi",
+            allow_missing=True
+        ),
+        bai = expand(
+            rules.split_merged_alignments.output.main_bai,
+            read_type="hifi",
+            allow_missing=True
+        ),
     output:
         svsig = temp(DIR_PROC.joinpath(
             "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.{chrom}.svsig.gz"

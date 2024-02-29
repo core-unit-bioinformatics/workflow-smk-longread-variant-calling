@@ -27,7 +27,6 @@ rule compute_read_depth_in_windows:
         time_hrs=lambda wildcards, attempt: attempt
     params:
         prefix=lambda wildcards, output: pathlib.Path(output.check).with_suffix(""),
-        sam_flag_out=SAM_FLAG_EXCLUDE,
         min_mapq=lambda wildcards: int(wildcards.mapq),
         quantize_steps=lambda wildcards: ":".join(map(str, MOSDEPTH_QUANTIZE_STEPS)) + ":",
         quantize_names=MOSDEPTH_QUANTIZE_NAMES,  # does nothing, just memory hook
@@ -41,7 +40,7 @@ rule compute_read_depth_in_windows:
             " && "
         "{params.export_quant_names}"
         "mosdepth --use-median --mapq {params.min_mapq} --threads {threads} "
-        "--by {params.window_size} --no-per-base --flag {params.sam_flag_out} "
+        "--by {params.window_size} --no-per-base "
         "--quantize {params.quantize_steps} {params.prefix} {input.bam}"
             " && "
         "touch {output.check}"
@@ -76,7 +75,6 @@ rule compute_read_depth_in_user_roi:
         time_hrs=lambda wildcards, attempt: attempt
     params:
         prefix=lambda wildcards, output: pathlib.Path(output.check).with_suffix(""),
-        sam_flag_out=SAM_FLAG_EXCLUDE,
         min_mapq=lambda wildcards: int(wildcards.mapq),
         thresholds=lambda wildcards: ",".join(map(str, MOSDEPTH_COV_THRESHOLDS)),
         wd=lambda wildcards, output: pathlib.Path(output.check).parent
@@ -84,7 +82,7 @@ rule compute_read_depth_in_user_roi:
         "mkdir -p {params.wd}"
             " && "
         "mosdepth --use-median --mapq {params.min_mapq} --threads {threads} "
-        "--by {input.user_roi} --no-per-base --flag {params.sam_flag_out} "
+        "--by {input.user_roi} --no-per-base "
         "--thresholds {params.thresholds} {params.prefix} {input.bam}"
             " && "
         "touch {output.check}"

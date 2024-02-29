@@ -46,13 +46,15 @@ rule align_minimap2_hifi:
             f'"@RG\\tID:{wildcards.sample}_{wildcards.path_id}'
             f'\\tSM:{wildcards.sample}"'
         ),
-        sam_flag_out = SAM_FLAG_EXCLUDE,
+        sam_flag_out = SAM_FLAG_DISCARD,
         sam_threads = CPU_LOW,
+        aln_thres = MIN_RATIO_PRIME_TO_SECOND,
+        keep_n_second = KEEP_AT_MOST_N_SECOND,
         acc_in=lambda wildcards, input: register_input(input.reads),
         acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
-        "minimap2 -a -x map-hifi -p 0.8 --MD --eqx -L -t {threads} "
-        " -R {params.readgroup} -N 1 {input.reference} "
+        "minimap2 -a -x map-hifi -p {params.aln_thres} --MD --eqx -L -t {threads} "
+        " -R {params.readgroup} -N {params.keep_n_second} {input.reference} "
         " {input.reads} 2> {log.aln}"
             " | "
         " samtools view -u -h --output-unselected {output.exclude} "
@@ -70,11 +72,8 @@ rule align_lra_hifi:
     """
     NB: LRA does not support compressed input!
 
-    --alnthres 0.8: Threshold to decide secondary alignments
-        -- set to 0.8 to be closer to minimap2 settings
     -p s: Print alignment format 's' / sam
     --printMD: Write the MD tag in sam and paf output
-    --PrintNumAln 2: Print out at most 2 alignments for one read.
     """
     input:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
@@ -113,15 +112,17 @@ rule align_lra_hifi:
             f'"@RG\\tID:{wildcards.sample}_{wildcards.path_id}'
             f'\\tSM:{wildcards.sample}"'
         ),
-        sam_flag_out = SAM_FLAG_EXCLUDE,
+        sam_flag_out = SAM_FLAG_DISCARD,
         sam_threads = CPU_LOW,
+        aln_thres = MIN_RATIO_PRIME_TO_SECOND,
+        keep_n_second = KEEP_AT_MOST_N_SECOND,
         acc_in=lambda wildcards, input: register_input(input.reads),
         acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
         "pigz -p {threads} -d -c {input.reads} "
             " | "
-        "lra align -CCS -p s -t {threads} --alnthres 0.8 "
-        " --PrintNumAln 2 --printMD --refineBreakpoints "
+        "lra align -CCS -p s -t {threads} --alnthres {params.aln_thres} "
+        " --PrintNumAln {params.keep_n_second} --printMD --refineBreakpoints "
         " {input.reference} /dev/stdin 2> {log.aln}"
             " | "
         " samtools addreplacerg -m overwrite_all "
@@ -183,13 +184,14 @@ rule align_pbmm2_hifi:
             f'"@RG\\tID:{wildcards.sample}_{wildcards.path_id}'
             f'\\tSM:{wildcards.sample}"'
         ),
-        sam_flag_out = SAM_FLAG_EXCLUDE,
+        sam_flag_out = SAM_FLAG_DISCARD,
         sam_threads = CPU_LOW,
+        keep_n_second = KEEP_AT_MOST_N_SECOND,
         acc_in=lambda wildcards, input: register_input(input.reads),
         acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
         "pbmm2 align --preset HiFi --strip -j {threads} "
-        " --rg {params.readgroup} --best-n 2 --unmapped "
+        " --rg {params.readgroup} --best-n {params.keep_n_second} --unmapped "
         " {input.reference} {input.reads} 2> {log.aln}"
             " | "
         " samtools view -u -h --output-unselected {output.exclude} "

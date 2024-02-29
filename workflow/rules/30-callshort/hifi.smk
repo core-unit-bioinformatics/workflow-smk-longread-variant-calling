@@ -3,10 +3,8 @@ rule short_call_deepvariant_hifi:
     input:
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam.bai"),
+        bam = rules.split_merged_alignments.output.main,
+        bai = rules.split_merged_alignments.output.main_bai
     output:
         vcfgz = DIR_PROC.joinpath(
             "30-callshort", "{sample}_{read_type}.{aligner}-deepvar.{ref}.{chrom}.vcf.gz"

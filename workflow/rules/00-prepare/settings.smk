@@ -111,11 +111,18 @@ if _user_roi_config is not None:
 # ---
 # Default is (or-chained):
 # - read unmapped
-# - not primary alignment
 # - read fails platform/vendor quality checks
 # - read is PCR or optical duplicate
-SAM_FLAG_EXCLUDE = config.get("sam_flag_exclude", 1796)
-assert isinstance(SAM_FLAG_EXCLUDE, int)
+SAM_FLAG_DISCARD = config.get("sam_flag_discard", 1540)
+assert isinstance(SAM_FLAG_DISCARD, int)
+
+# Split final BAM files by default into
+# main BAM containing primary/supplementary
+# and and aux BAM containing secondary read
+# alignments.
+SAM_FLAG_SPLIT = config.get("sam_flag_split", 256)
+assert isinstance(SAM_FLAG_SPLIT, int)
+
 
 MOSDEPTH_QUANTIZE_STEPS = config.get(
     "mosdepth_quantize_steps", [0, 1, 5, 10, 15]
@@ -141,6 +148,17 @@ assert all(isinstance(v, int) for v in MOSDEPTH_MIN_MAPQ)
 ###############################
 ### SETTINGS FOR HIFI ALIGNERS
 ###############################
+
+# depending on the nature of the input samples,
+# checking secondary alignments may be informative
+# but, usually, any of the downstream tools does
+# not use them, hence the main BAM file does not
+# include those (see SAM_FLAGS above)
+MIN_RATIO_PRIME_TO_SECOND = config.get("min_ratio_prime_to_second", 0.9)
+assert isinstance(MIN_RATIO_PRIME_TO_SECOND, float)
+KEEP_AT_MOST_N_SECOND = config.get("keep_at_most_n_second", 5)
+assert isinstance(KEEP_AT_MOST_N_SECOND, int)
+
 
 RUN_HIFI_ALIGNER = config.get("run_hifi_aligner", [])
 assert isinstance(RUN_HIFI_ALIGNER, list)

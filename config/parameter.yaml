@@ -12,6 +12,23 @@ input_file_ext:
 # reference_genomes:
 #   label: fasta_file_name
 
+######################################
+### GENERAL ALIGNER RUNTIME PARAMETERS
+######################################
+
+# if applicable, set for all aligners ...
+# Ratio of primary to secondary alignment,
+# discard if below that threshold.
+# minimap2 default is 0.8
+min_ratio_prime_to_second: 0.9
+keep_at_most_n_second: 5
+
+# SAM flags to (i) filter alignments
+# while they are being generated and
+# (ii) after everything has been merged.
+sam_flag_discard: 1540
+sam_flag_split: 256
+
 run_hifi_aligner:
   - minimap2
 
