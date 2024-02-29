@@ -1,4 +1,4 @@
 name: cuteSV
 dependencies:
-  - cutesv=2.0.3
+  - cutesv=2.1.0
   - bcftools=1.16

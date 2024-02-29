@@ -1,4 +1,11 @@
 name: pbmm2
 dependencies:
-  - pbmm2=1.12.0
+  - pbmm2=1.13.1
   - samtools=1.16.1
+  # NB: according to the pbmm2
+  # v1.13.0 changelog, this version
+  # relies on minimap2 v2.26 and also
+  # updated all presets to the mm2
+  # recommendation. Running pbmm2
+  # is hence pointless w/o any major
+  # updates to the code base.

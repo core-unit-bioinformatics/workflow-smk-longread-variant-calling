@@ -14,15 +14,14 @@ input_file_ext:
 
 run_hifi_aligner:
   - minimap2
-  - pbmm2
 
 run_hifi_sv_toolchain:
   - minimap2, cuteSV
   - minimap2, sniffles
-  - pbmm2, pbsv
+  - minimap2, pbsv
 
 run_hifi_cnv_toolchain:
-  - pbmm2, hificnv
+  - minimap2, hificnv
 
 run_hifi_short_toolchain:
   - minimap2, DeepVariant
