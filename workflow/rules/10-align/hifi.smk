@@ -237,16 +237,3 @@ rule run_pbmm2_hifi_align:
             path_id=HIFI_INPUT,
         )
 
-
-rule run_all_hifi_align:
-    input:
-        bams = expand(
-            DIR_PROC.joinpath(
-                "10-align", "{sample}_hifi_{path_id}.{aligner}.{ref}.sort.bam"
-            ),
-            expand_hifi_reads,
-            ref=USE_REF_GENOMES,
-            sample=HIFI_SAMPLES,
-            path_id=HIFI_INPUT,
-            aligner=HIFI_ALIGNER_WILDCARDS
-        ),
