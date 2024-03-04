@@ -1,10 +1,8 @@
 
 rule compute_read_depth_in_windows:
     input:
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam.bai"),
+        bam = rules.split_merged_alignments.output.main,
+        bai = rules.split_merged_alignments.output.main_bai
     output:
         check = DIR_PROC.joinpath(
             "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.win.mq{mapq}",
@@ -49,10 +47,8 @@ rule compute_read_depth_in_windows:
 rule compute_read_depth_in_user_roi:
     input:
         user_roi = lambda wildcards: USER_ROI_FILES[wildcards.roi],
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "{sample}_{read_type}.{aligner}.{ref}.sort.bam.bai"),
+        bam = rules.split_merged_alignments.output.main,
+        bai = rules.split_merged_alignments.output.main_bai
     output:
         check = DIR_PROC.joinpath(
             "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
