@@ -3,6 +3,7 @@ rule align_minimap2_hifi:
     """
     -a: output in SAM
     --eqx: write =/X CIGAR operators
+    -Y: use soft-clipping for suppl. alns (mandatory for pbsv)
     --MD: output MD tag
     (SAMspecs: String encoding mismatched and deleted reference bases)
     -N 1: keep at most 1 secondary alignment
@@ -13,12 +14,12 @@ rule align_minimap2_hifi:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
         reference = lambda wildcards: REF_GENOMES[wildcards.ref]
     output:
-        sort = DIR_PROC.joinpath(
+        sort = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.sort.bam"
-        ),
-        index = DIR_PROC.joinpath(
+        )),
+        index = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.sort.bam.bai"
-        ),
+        )),
         exclude = DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.excl.bam"
         ),
@@ -53,7 +54,7 @@ rule align_minimap2_hifi:
         acc_in=lambda wildcards, input: register_input(input.reads),
         acc_ref=lambda wildcards, input: register_reference(input.reference),
     shell:
-        "minimap2 -a -x map-hifi -p {params.aln_thres} --MD --eqx -L -t {threads} "
+        "minimap2 -a -x map-hifi -p {params.aln_thres} -Y --MD --eqx -L -t {threads} "
         " -R {params.readgroup} -N {params.keep_n_second} {input.reference} "
         " {input.reads} 2> {log.aln}"
             " | "
@@ -79,12 +80,12 @@ rule align_lra_hifi:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
         reference = lambda wildcards: REF_GENOMES[wildcards.ref]
     output:
-        sort = DIR_PROC.joinpath(
+        sort = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.lra.{ref}.sort.bam"
-        ),
-        index = DIR_PROC.joinpath(
+        )),
+        index = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.lra.{ref}.sort.bam.bai"
-        ),
+        )),
         exclude = DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.lra.{ref}.excl.bam"
         ),
@@ -151,12 +152,12 @@ rule align_pbmm2_hifi:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
         reference = lambda wildcards: REF_GENOMES[wildcards.ref]
     output:
-        sort = DIR_PROC.joinpath(
+        sort = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.pbmm2.{ref}.sort.bam"
-        ),
-        index = DIR_PROC.joinpath(
+        )),
+        index = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.pbmm2.{ref}.sort.bam.bai"
-        ),
+        )),
         exclude = DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.pbmm2.{ref}.excl.bam"
         ),
