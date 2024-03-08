@@ -60,7 +60,7 @@ rule compute_read_depth_in_user_roi:
                 "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
             )),
             ".mosdepth.global.dist.txt", ".mosdepth.region.dist.txt", ".mosdepth.summary.txt",
-            ".quantized.bed.gz", ".quantized.bed.gz.csi",
+            ".thresholds.bed.gz", ".thresholds.bed.gz.csi",
             ".regions.bed.gz", ".regions.bed.gz.csi"
         )
     conda:
