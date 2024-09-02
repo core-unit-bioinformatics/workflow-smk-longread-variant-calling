@@ -98,7 +98,7 @@ rule intersect_copynum_windows:
             "{sample}_hifi.{aligner}-pbcnv.{ref}.win-{win_size}.cn.bed.gz",
         ),
     conda:
-        DIR_ENVS.joinpath("bedtools.yaml")
+        DIR_ENVS.joinpath("biotools.yaml")
     resources:
         mem_mb=lambda wildcards, attempt: 1024 * attempt
     shell:
