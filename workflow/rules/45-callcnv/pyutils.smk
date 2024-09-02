@@ -20,3 +20,20 @@ def load_cn_aux_file(reference, sample, which):
         cn_aux_file = DIR_GLOBAL_REF.joinpath(cn_aux_file)
 
     return cn_aux_file
+
+
+def suffixed_number_to_int(number):
+
+    factors = {
+        "k": int(1e3),
+        "m": int(1e6),
+        "g": int(1e9)
+    }
+
+    try:
+        num = int(number)
+    except ValueError:
+        suffix = number[-1]
+        num = int(number[:1]) * factors[suffix]
+
+    return int(num)

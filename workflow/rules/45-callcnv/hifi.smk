@@ -1,4 +1,26 @@
 
+localrules: create_reference_windows
+rule create_reference_windows:
+    """The reference windows are just used
+    to simplify the merging process of the
+    hificnv bedgraph output
+    """
+    input:
+        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")]
+    output:
+        bed = DIR_LOCAL_REF.joinpath(
+            "{ref}.windows.{win_size}.bed.gz"
+        )
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    params:
+        win_size = lambda wildcards: suffixed_number_to_int(wildcards.win_size)
+    shell:
+        "bedtools makewindows -g {input.ref_idx} -w {params.win_size}"
+            " | "
+        "gzip > {output}"
+
+
 rule cnv_calling_pbcnv:
     """HIFICNV sets the output file names
     by using an output prefix plus the sample
@@ -59,11 +81,42 @@ rule cnv_calling_pbcnv:
         "--output-prefix {params.outprefix}"
 
 
+rule intersect_copynum_windows:
+    """This rule simplifies/normalizes the copy number
+    track to regular windows to make merging with/comparing to
+    other samples trivial.
+    The operations below just cut out the copy number estimate
+    and replace the empty '.' with -1
+    (happens in masked regions such as centromeres)
+    """
+    input:
+        windows = rules.create_reference_windows.output.bed,
+        cn_track = rules.cnv_calling_pbcnv.output.copynum
+    output:
+        bed = DIR_PROC.joinpath(
+            "45-callcnv", "normalized"
+            "{sample}_hifi.{aligner}-pbcnv.{ref}.win-{win_size}.cn.bed.gz",
+        ),
+    conda:
+        DIR_ENVS.joinpath("bedtools.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
+    shell:
+        "bedtools intersect -wao -a {input.windows} -b {input.cn_track}"
+            " | "
+        "cut -f 1,2,3,7"
+            " | "
+        "sed 's/\./-1/g'"
+            " | "
+        "gzip > {output}"
+
+
 rule run_all_cnv_calling_pbcnv:
     input:
         cn_est = expand(
-            rules.cnv_calling_pbcnv.output.copynum,
+            rules.intersect_copynum_windows.output.bed,
             sample=HIFI_SAMPLES,
             aligner=ALIGNER_FOR_CALLER[("pbcnv", "hifi")],
-            ref=USE_REF_GENOMES
+            ref=USE_REF_GENOMES,
+            win_size=["1k"]
         )

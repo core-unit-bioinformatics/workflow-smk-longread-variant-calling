@@ -6,3 +6,4 @@ dependencies:
   - tabix=1.11
   - mosdepth=0.3.3
   - pigz=2.6
+  - bedtools=2.31
