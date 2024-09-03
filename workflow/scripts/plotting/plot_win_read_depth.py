@@ -221,7 +221,7 @@ def main():
         cov_limit_label = f"{int(round(args.cov_limit_pctile * 100, 0))}%"
 
     if cov_limit_pctile > 0:
-        clip_cov = compute_coverage_clip_value(plot_data)
+        clip_cov = compute_coverage_clip_value(plot_data, cov_limit_pctile, cov_limit_label)
         plot_data["median_cov"].clip(upper=clip_cov, inplace=True)
 
     if args.title == "auto":
