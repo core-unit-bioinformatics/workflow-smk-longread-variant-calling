@@ -94,7 +94,7 @@ rule intersect_copynum_windows:
         cn_track = rules.cnv_calling_pbcnv.output.copynum
     output:
         bed = DIR_PROC.joinpath(
-            "45-callcnv", "normalized"
+            "45-callcnv", "normalized",
             "{sample}_hifi.{aligner}-pbcnv.{ref}.win-{win_size}.cn.bed.gz",
         ),
     conda:
