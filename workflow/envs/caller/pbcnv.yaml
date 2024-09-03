@@ -1,3 +1,3 @@
 name: pbcnv
 dependencies:
-  - hificnv=0.1.7
+  - hificnv=1.0.0
