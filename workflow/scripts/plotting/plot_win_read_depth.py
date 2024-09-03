@@ -2,6 +2,7 @@
 
 import argparse as argp
 import pathlib as pl
+import sys
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -19,6 +20,14 @@ def parse_command_line():
         type=lambda x: pl.Path(x).resolve(strict=True),
         dest="agg_table",
         help="Path to TSV table with coverage data aggregated in windows."
+    )
+
+    parser.add_argument(
+        "--cov-limit-pctile",
+        type=float,
+        default=0.99,
+        dest="cov_limit_pctile",
+        help="Cap coverage at [clip above] that percentile. Default: 0.99 [99th]"
     )
 
     parser.add_argument(
@@ -169,6 +178,28 @@ def create_read_depth_profile_plot(figsize, colors, wg_cov, global_median, fig_t
     return
 
 
+def compute_coverage_clip_value(plot_data, cov_limit_pctile, cov_limit_label):
+
+    pandas_standard_labels = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+    clip_cov = None
+
+    for label, value in plot_data["median_cov"].describe(percentiles=[cov_limit_pctile]).items():
+        if label in pandas_standard_labels and label != cov_limit_label:
+            continue
+        elif label not in pandas_standard_labels and label == cov_limit_label:
+            clip_cov = value
+        elif label not in pandas_standard_labels and label != cov_limit_label:
+            # tricky - rounding issue?
+            sys.stderr.write(f"\nWARNING\nUnexpected percentile label - running past correct label? ==> {label} / {cov_limit_label}\n")
+        else:
+            raise ValueError(f"{label} / {value}")
+
+    if clip_cov is None:
+        raise RuntimeError("Could not compute valid clip value for coverage")
+
+    return clip_cov
+
+
 def main():
 
     args = parse_command_line()
@@ -181,10 +212,25 @@ def main():
         index_col=[0,1,2,3,4]
     )
 
+    if args.cov_limit_pctile > 1:
+        cov_limit_pctile = round(args.cov_limit_pctile / 100, 2)
+        cov_limit_label = f"{int(args.cov_limit_pctile)}%"
+    else:
+        cov_limit_pctile = args.cov_limit_pctile
+        # this may be off due to rounding
+        cov_limit_label = f"{int(round(args.cov_limit_pctile * 100, 0))}%"
+
+    if cov_limit_pctile > 0:
+        clip_cov = compute_coverage_clip_value(plot_data)
+        plot_data["median_cov"].clip(upper=clip_cov, inplace=True)
+
     if args.title == "auto":
         fig_title = args.agg_table.stem
     else:
         fig_title = args.title
+
+    if cov_limit_pctile > 0:
+        fig_title = f"{fig_title} (clipped at {cov_limit_label}ile)"
 
     args.out_pdf.parent.mkdir(exist_ok=True, parents=True)
     _ = create_read_depth_profile_plot(
