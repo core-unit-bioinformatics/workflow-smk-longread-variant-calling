@@ -81,6 +81,35 @@ rule cnv_calling_pbcnv:
         "--output-prefix {params.outprefix}"
 
 
+rule drop_zero_length_windows:
+    """hificnv has the somewhat problematic property of producing
+    zero-length BED regions that break the subsequent call to
+    bedtools intersect. See
+    gh#29 // github.com/PacificBiosciences/HiFiCNV
+    gh#869 // github.com/arq5x/bedtools2
+    Hence, these records are removed here but if and only if
+    both coordinates are zero (start and end)
+    """
+    input:
+        bedgraph = rules.cnv_calling_pbcnv.output.copynum
+    output:
+        bedgraph = temp(
+            DIR_PROC.joinpath("temp", "45-callcnv", "{sample}_hifi.{aligner}-pbcnv.{ref}.cn.bedgraph")
+        )
+    run:
+        import pandas as pd
+        cn_track = pd.read_csv(input.bedgraph, sep="\t", header=None, names=["chrom", "start", "end", "cn"])
+        select_zero_start = cn_track["start"] == 0
+        select_zero_end = cn_track["end"] == 0
+        selector = select_zero_start & select_zero_end
+        if selector.any():
+            sub = cn_track.loc[~selector, :]
+        else:
+            sub = cn_track
+        sub.to_csv(output.bedgraph, sep="\t", header=False, index=False)
+    # END OF RUN BLOCK
+
+
 rule intersect_copynum_windows:
     """This rule simplifies/normalizes the copy number
     track to regular windows to make merging with/comparing to
@@ -91,7 +120,7 @@ rule intersect_copynum_windows:
     """
     input:
         windows = rules.create_reference_windows.output.bed,
-        cn_track = rules.cnv_calling_pbcnv.output.copynum
+        cn_track = rules.drop_zero_length_windows.output.bedgraph
     output:
         bed = DIR_PROC.joinpath(
             "45-callcnv", "normalized",
