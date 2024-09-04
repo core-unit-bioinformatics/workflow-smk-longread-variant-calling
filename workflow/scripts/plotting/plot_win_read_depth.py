@@ -77,7 +77,7 @@ def read_global_coverage_info(file_path):
     return int(float(value))
 
 
-def determine_xticks_and_chrom_boundaries(alt_colors, chrom_order_nums):
+def determine_xticks_and_chrom_boundaries(alt_colors, chrom_order_nums, chrom_label):
 
     chrom_boundaries = []
     x_tick_pos = []
@@ -96,7 +96,7 @@ def determine_xticks_and_chrom_boundaries(alt_colors, chrom_order_nums):
             right_border = pos
             x_tick = left_border + ((right_border - left_border) // 2)
             x_tick_pos.append(x_tick)
-            x_tick_labels.append(x_label)
+            x_tick_labels.append(chrom_label[x_label].strip("chr"))
             if colorize:
                 assert right_border is not None
                 chrom_boundaries.append((left_border, right_border))
@@ -126,8 +126,14 @@ def create_read_depth_profile_plot(figsize, colors, wg_cov, global_median, fig_t
         for sort_num in wg_cov.index.get_level_values("sort_order")
     ]
 
+    chrom_label_lookup = dict(
+        (order_num, chrom) for order_num, chrom in
+        zip(wg_cov.index.get_level_values("sort_order"), wg_cov.index.get_level_values("chrom"))
+    )
+
     x_ticks, x_ticklabels, chrom_bounds = determine_xticks_and_chrom_boundaries(
-        alt_colors, wg_cov.index.get_level_values("sort_order")
+        alt_colors, wg_cov.index.get_level_values("sort_order"),
+        chrom_label_lookup
     )
 
     x_vals = np.arange(wg_cov.values.size)
