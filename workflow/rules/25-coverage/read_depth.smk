@@ -67,7 +67,7 @@ rule compute_read_depth_in_user_roi:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW
     resources:
-        mem_mb=lambda wildcards, attempt: 2048 * attempt,
+        mem_mb=lambda wildcards, attempt: 4096 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     params:
         prefix=lambda wildcards, output: pathlib.Path(output.check).with_suffix(""),
