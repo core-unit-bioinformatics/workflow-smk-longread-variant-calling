@@ -110,7 +110,7 @@ def determine_xticks_and_chrom_boundaries(alt_colors, chrom_order_nums, chrom_la
         chrom_boundaries.append((left_border, right_border))
         x_tick = left_border + ((right_border - left_border) // 2)
         x_tick_pos.append(x_tick)
-        x_tick_labels.append(x_label)
+        x_tick_labels.append(chrom_label[x_label].strip("chr"))
 
     return x_tick_pos, x_tick_labels, chrom_boundaries
 
@@ -228,7 +228,7 @@ def main():
 
     if cov_limit_pctile > 0:
         clip_cov = compute_coverage_clip_value(plot_data, cov_limit_pctile, cov_limit_label)
-        plot_data["median_cov"].clip(upper=clip_cov, inplace=True)
+        plot_data["median_cov"] = plot_data["median_cov"].clip(upper=clip_cov, inplace=False)
 
     if args.title == "auto":
         fig_title = args.agg_table.stem
