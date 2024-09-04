@@ -134,7 +134,7 @@ rule merge_read_depth_in_user_roi:
             assert mapq.startswith("mq")
 
             cov_column = f"{sample}_{mapq}_cov"
-            cov_data = pd.read_csv(bed_file, sep="\t", header=["chrom", "start", "end", "name", cov_column])
+            cov_data = pd.read_csv(bed_file, sep="\t", header=None, names=["chrom", "start", "end", "name", cov_column])
             cov_data.set_index(["chrom", "start", "end", "name"], inplace=True)
             concat.append(cov_data)
 
