@@ -84,6 +84,63 @@ rule compute_read_depth_in_user_roi:
         "touch {output.check}"
 
 
+# TODO this does not strike me as very elegant
+if HIFI_SAMPLES:
+
+    _HIFI_DEPTH_ROI_REGIONS = expand(
+        DIR_PROC.joinpath(
+            "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
+            "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}.regions.bed.gz"
+        ),
+        sample=HIFI_SAMPLES,
+        mapq=MOSDEPTH_MIN_MAPQ,
+        allow_missing=True
+    )
+
+if ONT_SAMPLES:
+
+    _ONT_DEPTH_ROI_REGIONS = expand(
+        DIR_PROC.joinpath(
+            "25-coverage", "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}",
+            "{sample}_{read_type}.{aligner}.{ref}.{roi}.mq{mapq}.regions.bed.gz"
+        ),
+        sample=ONT_SAMPLES,
+        mapq=MOSDEPTH_MIN_MAPQ,
+        allow_missing=True
+    )
+
+
+rule merge_read_depth_in_user_roi:
+    input:
+        regions = lambda wildcards: _HIFI_DEPTH_ROI_REGIONS if wildcards.read_type == "hifi" else _ONT_DEPTH_ROI_REGIONS
+    output:
+        merged = DIR_RES.joinpath(
+            "read_depth", "user_roi",
+            "SAMPLES.{read_type}.{aligner}.{ref}.{roi}.regions.tsv.gz"
+        )
+    resources:
+        mem_mb=lambda wildcards, attempt: 2048 * attempt
+    run:
+        import pandas as pd
+
+        splitter = f"_{wildcards.read_type}"
+        concat = []
+        for bed_file in sorted(input.regions):
+            sample = bed_file.split(splitter)[0]
+            assert sample in HIFI_SAMPLES or sample in ONT_SAMPLES
+            mapq = bed_file.split(".")[-4]
+            assert mapq.startswith("mq")
+
+            cov_column = f"{sample}_{mapq}_cov"
+            cov_data = pd.read_csv(bed_file, sep="\t", header=["chrom", "start", "end", "name", cov_column])
+            cov_data.set_index(["chrom", "start", "end", "name"], inplace=True)
+            concat.append(cov_data)
+
+        concat = pd.concat(concat, axis=1, ignore_index=False)
+        concat.to_csv(output.merged, sep="\t", header=True, index=True)
+    # END OF RUN BLOCK
+
+
 if HIFI_SAMPLES:
     rule compute_genome_hifi_read_depth:
         input:
@@ -110,7 +167,16 @@ if HIFI_SAMPLES:
                     aligner=HIFI_ALIGNER_WILDCARDS,
                     ref_roi_pair=USER_ROI_FILE_WILDCARDS,
                     mapq=MOSDEPTH_MIN_MAPQ
+                ),
+                merged = expand(
+                    DIR_RES.joinpath(
+                        "read_depth", "user_roi", "SAMPLES.{read_type}.{aligner}.{ref_roi_pair}.regions.tsv.gz"
+                    ),
+                    read_type="hifi",
+                    aligner=HIFI_ALIGNER_WILDCARDS,
+                    ref_roi_pair=USER_ROI_FILE_WILDCARDS
                 )
+
 
 if ONT_SAMPLES:
     rule compute_genome_ont_read_depth:
@@ -138,4 +204,12 @@ if ONT_SAMPLES:
                     aligner=ONT_ALIGNER_WILDCARDS,
                     ref_roi_pair=USER_ROI_FILE_WILDCARDS,
                     mapq=MOSDEPTH_MIN_MAPQ
+                ),
+                merged = expand(
+                    DIR_RES.joinpath(
+                        "read_depth", "user_roi", "SAMPLES.{read_type}.{aligner}.{ref_roi_pair}.regions.tsv.gz"
+                    ),
+                    read_type="ont",
+                    aligner=ONT_ALIGNER_WILDCARDS,
+                    ref_roi_pair=USER_ROI_FILE_WILDCARDS
                 )
