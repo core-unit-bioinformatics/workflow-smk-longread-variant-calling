@@ -122,13 +122,15 @@ rule merge_read_depth_in_user_roi:
         mem_mb=lambda wildcards, attempt: 2048 * attempt
     run:
         import pandas as pd
+        import pathlib as pl
 
         splitter = f"_{wildcards.read_type}"
         concat = []
         for bed_file in sorted(input.regions):
-            sample = bed_file.split(splitter)[0]
+            bed_file_name = pl.Path(bed_file).name
+            sample = bed_file_name.split(splitter)[0]
             assert sample in HIFI_SAMPLES or sample in ONT_SAMPLES
-            mapq = bed_file.split(".")[-4]
+            mapq = bed_file_name.split(".")[-4]
             assert mapq.startswith("mq")
 
             cov_column = f"{sample}_{mapq}_cov"
