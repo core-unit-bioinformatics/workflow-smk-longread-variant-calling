@@ -50,11 +50,11 @@ rule extract_alignment_subset:
         bed = rules.add_margin_around_roi.output.ext_bed
     output:
         bam = DIR_RES.joinpath(
-            "alignments", "roi_subsets", "{ref}",
+            "alignments", "roi_subsets", "{ref}.{roi}",
             "{sample}_{read_type}.{aligner}.{ref}.{roi}.ext-{margin}.main.sort.bam"
         ),
         bai = DIR_RES.joinpath(
-            "alignments", "roi_subsets", "{ref}",
+            "alignments", "roi_subsets", "{ref}.{roi}",
             "{sample}_{read_type}.{aligner}.{ref}.{roi}.ext-{margin}.main.sort.bam.bai"
         )
     conda:
