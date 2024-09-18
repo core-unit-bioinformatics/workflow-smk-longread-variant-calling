@@ -88,7 +88,7 @@ if HIFI_SAMPLES:
             bai = expand(
                 DIR_RES.joinpath(
                     "alignments", "roi_subsets", "{ref_roi}",
-                    "{sample}_{read_type}.{aligner}.{ref_roi}.ext-{margin}.main.sort.bai"
+                    "{sample}_{read_type}.{aligner}.{ref_roi}.ext-{margin}.main.sort.bam.bai"
                 ),
                 sample=HIFI_SAMPLES,
                 read_type=["hifi"],
