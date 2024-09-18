@@ -27,7 +27,7 @@ rule add_margin_around_roi:
             assert wildcards.margin.endswith("k")
             margin_bp = int(int(wildcards.margin[:-1]) * 1000)
 
-        regions = pd.read_csv(input.bed, sep="\t", header=None, name=["chrom", "start", "end", "name"], usecols=[0,1,2,3])
+        regions = pd.read_csv(input.bed, sep="\t", header=None, names=["chrom", "start", "end", "name"], usecols=[0,1,2,3])
 
         def adapt_clip_end(row, margin, chrom_sizes):
             return min(row.end + margin, chrom_sizes[row.chrom])
