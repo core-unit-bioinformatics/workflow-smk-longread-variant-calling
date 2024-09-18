@@ -75,7 +75,7 @@ if HIFI_SAMPLES:
         input:
             bam = expand(
                 DIR_RES.joinpath(
-                    "alignments", "roi_subsets", "{ref}",
+                    "alignments", "roi_subsets", "{ref_roi}",
                     "{sample}_{read_type}.{aligner}.{ref_roi}.ext-{margin}.main.sort.bam"
                 ),
                 sample=HIFI_SAMPLES,
@@ -87,7 +87,7 @@ if HIFI_SAMPLES:
             ),
             bai = expand(
                 DIR_RES.joinpath(
-                    "alignments", "roi_subsets", "{ref}",
+                    "alignments", "roi_subsets", "{ref_roi}",
                     "{sample}_{read_type}.{aligner}.{ref_roi}.ext-{margin}.main.sort.bai"
                 ),
                 sample=HIFI_SAMPLES,
