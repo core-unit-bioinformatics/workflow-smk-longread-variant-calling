@@ -21,6 +21,15 @@ CONSTRAINT_REF_GENOMES = "(" + "|".join(USE_REF_GENOMES) + ")"
 CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
 assert isinstance(CHROMOSOMES, list)
 
+### if the genotyping data flow / personalized reference genome
+# modules need to be executed, the PanGenie singularity container
+# must be available and the "container_store" path variable
+# is likely set via the environment config
+# By default, just assume that the user put the container into
+# the working directory
+CONTAINER_STORE = pathlib.Path(config.get("container_store", WORKDIR)).resolve(strict=True)
+
+
 #############################
 ### Check if user-specified
 ### ROI files are available
@@ -123,6 +132,9 @@ assert isinstance(SAM_FLAG_DISCARD, int)
 SAM_FLAG_SPLIT = config.get("sam_flag_split", 256)
 assert isinstance(SAM_FLAG_SPLIT, int)
 
+##########################
+### SETTINGS FOR MOSDEPTH
+##########################
 
 MOSDEPTH_QUANTIZE_STEPS = config.get(
     "mosdepth_quantize_steps", [0, 1, 5, 10, 15]
