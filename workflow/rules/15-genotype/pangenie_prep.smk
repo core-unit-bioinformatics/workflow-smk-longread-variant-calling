@@ -31,10 +31,10 @@ rule build_pangenie_index:
     input:
         vcf = lambda wildcards: DIR_LOCAL_REF.joinpath(
             config["panel_vcfs"][wildcards.panel]["multiallelic"]
-        ).stem,
+        ).with_suffix(""),
         ref_genome = lambda wildcards: DIR_LOCAL_REF.joinpath(
             REF_GENOMES[wildcards.ref].name
-        ).stem
+        ).with_suffix("")
     output:
         pgi = directory(
             DIR_PROC.joinpath("15-genotype", "pangenie_index", "{ref}.{panel}.pgi")
