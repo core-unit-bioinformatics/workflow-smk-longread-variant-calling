@@ -56,7 +56,7 @@ rule run_pangenie_genotyping:
             "{sample}_{read_type}_{ref}_{panel}.pgtype.rsrc"
         )
     singularity:
-        CONTAINER_STORE.joinpath(config.get("pangenie_container", "no-pangenie-container"))
+        str(CONTAINER_STORE.joinpath(config.get("pangenie_container", "no-pangenie-container")))
     threads: CPU_HIGH
     resources:
         mem_mb=lambda wildcards, attempt: 81920 + 16384 * attempt,
