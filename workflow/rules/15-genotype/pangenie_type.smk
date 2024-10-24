@@ -85,7 +85,7 @@ rule compress_index_pangenie_vcf:
             "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.malc.vcf.gz.tbi"
         ),
     conda:
-        DIR_EVNS.joinpath("biotools.yaml")
+        DIR_ENVS.joinpath("biotools.yaml")
     resources:
         mem_mb=lambda wildcards, attempt: 8192 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
@@ -112,7 +112,7 @@ rule convert_multiallelic_to_biallelic_repr:
     benchmark:
         DIR_RSRC.joinpath("15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.malc-to-balc.rsrc")
     conda:
-        DIR_EVNS.joinpath("biotools.yaml")
+        DIR_ENVS.joinpath("biotools.yaml")
     resources:
         mem_mb=lambda wildcards, attempt: 16384 + 16384 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
