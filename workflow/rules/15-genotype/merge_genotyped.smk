@@ -49,7 +49,7 @@ rule region_merge_and_fill_sample_genotypes:
         ),
         tbi = DIR_PROC.joinpath(
             "15-genotype", "merge_genotyped", "by_chrom",
-            "SAMPLES_{read_type}_{ref}_{panel}.pgt.{allele_repr}.{chrom}.vcf.gz"
+            "SAMPLES_{read_type}_{ref}_{panel}.pgt.{allele_repr}.{chrom}.vcf.gz.tbi"
         )
     log:
         DIR_LOG.joinpath(
@@ -136,6 +136,8 @@ rule concat_region_sample_genotypes:
         time_hrs=lambda wildcards, attempt: 11 * attempt
     shell:
         "bcftools concat -@ {threads} --output-format z9 --output {output.vcf} --file-list {input.fofn}"
+            " && "
+        "tabix -p vcf -@ {threads} {output.vcf}"
 
 
 rule run_all_merge_genotypes:
