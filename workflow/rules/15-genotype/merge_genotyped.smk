@@ -46,7 +46,7 @@ rule region_merge_and_fill_sample_genotypes:
         vcf = DIR_PROC.joinpath(
             "15-genotype", "merge_genotyped", "by_chrom",
             "SAMPLES_{read_type}_{ref}_{panel}.pgt.{allele_repr}.{chrom}.vcf.gz"
-        )
+        ),
         tbi = DIR_PROC.joinpath(
             "15-genotype", "merge_genotyped", "by_chrom",
             "SAMPLES_{read_type}_{ref}_{panel}.pgt.{allele_repr}.{chrom}.vcf.gz"
