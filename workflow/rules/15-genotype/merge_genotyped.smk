@@ -130,7 +130,7 @@ rule concat_region_sample_genotypes:
         )
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
-    threads: CPU_MIN
+    threads: CPU_LOW
     resources:
         mem_mb=lambda wildcards, attempt: 24576 + 24576 * attempt,
         time_hrs=lambda wildcards, attempt: 11 * attempt
