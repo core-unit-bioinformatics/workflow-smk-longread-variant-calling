@@ -1,0 +1,5 @@
+name: phasing
+dependencies:
+  - python=3.11.*
+  - shapeit5=5.1.1
+  - bcftools=1.20

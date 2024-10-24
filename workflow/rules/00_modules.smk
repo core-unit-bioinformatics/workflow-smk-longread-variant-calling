@@ -16,6 +16,9 @@ include: "15-genotype/pangenie_prep.smk"
 include: "15-genotype/pangenie_type.smk"
 include: "15-genotype/merge_genotyped.smk"
 
+include: "17-personal-ref/pyutils.smk"
+include: "17-personal-ref/phasing.smk"
+
 include: "20-postalign/process.smk"
 
 include: "25-coverage/pyutils.smk"
