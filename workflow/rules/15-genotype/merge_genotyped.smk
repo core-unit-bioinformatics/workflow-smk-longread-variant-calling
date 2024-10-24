@@ -72,7 +72,7 @@ rule region_merge_and_fill_sample_genotypes:
         "bcftools merge --regions {wildcards.chrom} --file-list {input.fofn} --threads {threads}"
             " | "
         "bcftools plugin fill-tags -O z9 -o {output.vcf} /dev/stdin -- -t AN,AC,AF &> {log}"
-            " | "
+            " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 
 

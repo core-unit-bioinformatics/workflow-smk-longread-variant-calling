@@ -86,11 +86,12 @@ rule compress_index_pangenie_vcf:
         ),
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_LOW
     resources:
         mem_mb=lambda wildcards, attempt: 8192 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     shell:
-        "bcftools view --output-type z9 --output {output.vcf} {input.vcf}"
+        "bcftools view --threads {threads} --output-type z9 --output {output.vcf} {input.vcf}"
             " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 
@@ -113,15 +114,16 @@ rule convert_multiallelic_to_biallelic_repr:
         DIR_RSRC.joinpath("15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.malc-to-balc.rsrc")
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_LOW
     resources:
         mem_mb=lambda wildcards, attempt: 16384 + 16384 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     params:
         script=find_script("convert-to-biallelic")
     shell:
-        "zcat {input.vcf} | {params.script} {input.ref_panel} | bcftools view --output-type z9 --output {output.vcf}"
-            " | "
-        "tabix -p vcf {output.vcf}"
+        "zcat {input.vcf} | {params.script} {input.ref_panel} | bcftools view --threads {threads} --output-type z9 --output {output.vcf}"
+            " && "
+        "tabix -p vcf --threads {threads} {output.vcf}"
 
 
 rule run_all_pangenie_genotyping:
