@@ -73,7 +73,7 @@ rule region_merge_and_fill_sample_genotypes:
             " | "
         "bcftools plugin fill-tags -O z9 -o {output.vcf} /dev/stdin -- -t AN,AC,AF &> {log}"
             " | "
-        "tabix -p vcf -@ {threads} {output.vcf}"
+        "tabix -p vcf --threads {threads} {output.vcf}"
 
 
 localrules: create_merged_chrom_genotypes_fofn
@@ -135,9 +135,9 @@ rule concat_region_sample_genotypes:
         mem_mb=lambda wildcards, attempt: 24576 + 24576 * attempt,
         time_hrs=lambda wildcards, attempt: 11 * attempt
     shell:
-        "bcftools concat -@ {threads} --output-format z9 --output {output.vcf} --file-list {input.fofn}"
+        "bcftools concat --threads {threads} --output-format z9 --output {output.vcf} --file-list {input.fofn}"
             " && "
-        "tabix -p vcf -@ {threads} {output.vcf}"
+        "tabix -p vcf --threads {threads} {output.vcf}"
 
 
 rule run_all_merge_genotypes:

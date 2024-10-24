@@ -92,7 +92,7 @@ rule compress_index_pangenie_vcf:
     shell:
         "bcftools view --output-type z9 --output {output.vcf} {input.vcf}"
             " && "
-        "tabix -p vcf -@ {threads} {output.vcf}"
+        "tabix -p vcf --threads {threads} {output.vcf}"
 
 
 rule convert_multiallelic_to_biallelic_repr:
