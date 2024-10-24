@@ -19,7 +19,7 @@ rule merge_decompress_reads:
         )
     resources:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
-        time_hrs=lambda wildcards, attempt: 1 * attempt
+        time_hrs=lambda wildcards, attempt: attempt
     shell:
         "gzip -c -d {input.reads} > {output.reads}"
 
@@ -44,6 +44,10 @@ rule run_pangenie_genotyping:
         vcf = DIR_PROC.joinpath(
             "15-genotype", "pangenie_genotyping", "{sample}.{ref}.{panel}",
             "{sample}_{read_type}_{ref}_{panel}_genotyping.vcf"
+        ),
+        hist = DIR_PROC.joinpath(
+            "15-genotype", "pangenie_genotyping", "{sample}.{ref}.{panel}",
+            "{sample}_{read_type}_{ref}_{panel}_histogram.histo"
         )
     log:
         DIR_LOG.joinpath(
@@ -52,7 +56,7 @@ rule run_pangenie_genotyping:
         )
     benchmark:
         DIR_RSRC.joinpath(
-            "15-genotype", "pangenie_index",
+            "15-genotype", "pangenie_genotyping",
             "{sample}_{read_type}_{ref}_{panel}.pgtype.rsrc"
         )
     singularity:
@@ -70,10 +74,67 @@ rule run_pangenie_genotyping:
         "-i {input.reads} &> {log}"
 
 
+rule compress_index_pangenie_vcf:
+    input:
+        vcf = rules.run_pangenie_genotyping.output.vcf
+    output:
+        vcf = DIR_PROC.joinpath(
+            "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.malc.vcf.gz"
+        ),
+        tbi = DIR_PROC.joinpath(
+            "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.malc.vcf.gz.tbi"
+        ),
+    conda:
+        DIR_EVNS.joinpath("biotools.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 8192 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
+    shell:
+        "bcftools view --output-type z9 --output {output.vcf} {input.vcf}"
+            " && "
+        "tabix -p vcf -@ {threads} {output.vcf}"
+
+
+rule convert_multiallelic_to_biallelic_repr:
+    input:
+        vcf = rules.compress_index_pangenie_vcf.output.vcf,
+        tbi = rules.compress_index_pangenie_vcf.output.tbi,
+        ref_panel = lambda wildcards: DIR_LOCAL_REF.joinpath(
+            config["panel_vcfs"][wildcards.panel]["biallelic"]
+        ).with_suffix(""),
+    output:
+        vcf = DIR_PROC.joinpath(
+            "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.balc.vcf.gz"
+        ),
+        tbi = DIR_PROC.joinpath(
+            "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.balc.vcf.gz.tbi"
+        ),
+    benchmark:
+        DIR_RSRC.joinpath("15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.malc-to-balc.rsrc")
+    conda:
+        DIR_EVNS.joinpath("biotools.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 16384 + 16384 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
+    params:
+        script=find_script("convert-to-biallelic")
+    shell:
+        "zcat {input.vcf} | {params.script} {input.ref_panel} | bcftools view --output-type z9 --output {output.vcf}"
+            " | "
+        "tabix -p vcf {output.vcf}"
+
+
 rule run_all_pangenie_genotyping:
     input:
-        vcfs = expand(
+        vcfs_malc = expand(
             rules.run_pangenie_genotyping.output.vcf,
+            sample=SAMPLES,
+            read_type=["hifi"],
+            ref=["t2tv2"],
+            panel=["hgsvc3hprc"]
+        ),
+        vcfs_balc = expand(
+            rules.convert_multiallelic_to_biallelic_repr.output.vcf,
             sample=SAMPLES,
             read_type=["hifi"],
             ref=["t2tv2"],

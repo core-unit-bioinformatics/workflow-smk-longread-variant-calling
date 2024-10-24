@@ -1,5 +1,6 @@
 name: biotools
 dependencies:
+  - python=3.11.*
   - htslib=1.17
   - samtools=1.16.1
   - bcftools=1.16

@@ -14,6 +14,7 @@ include: "10-align/hifi.smk"
 
 include: "15-genotype/pangenie_prep.smk"
 include: "15-genotype/pangenie_type.smk"
+include: "15-genotype/merge_genotyped.smk"
 
 include: "20-postalign/process.smk"
 
