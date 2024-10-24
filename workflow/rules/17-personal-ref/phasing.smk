@@ -69,7 +69,7 @@ rule convert_phased_to_vcf:
             "17-personal-ref", "convert_vcf",
             "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz"
         ),
-        tbi = bcf = DIR_PROC.joinpath(
+        tbi = DIR_PROC.joinpath(
             "17-personal-ref", "convert_vcf",
             "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz.tbi"
         )
