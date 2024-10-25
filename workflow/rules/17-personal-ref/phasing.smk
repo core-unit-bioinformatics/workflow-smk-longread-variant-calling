@@ -75,7 +75,7 @@ rule phase_samples_by_chrom:
         ),
         male_samples = rules.dump_list_of_males.output.lst,
         recomb_map = load_recombination_map,
-        ref_panel = rules.fix_ref_panel_vcf.output.vcf
+        ref_panel = rules.fix_ref_panel_vcf.output.ref_panel
     output:
         bcf = DIR_PROC.joinpath(
             "17-personal-ref", "phasing_by_chrom",
