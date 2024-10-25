@@ -17,6 +17,48 @@ rule dump_list_of_males:
     # END OF RUN BLOCK
 
 
+rule fix_ref_panel_vcf:
+    """The ref panel vcf (decomposed)
+    does not contain all tags and AC
+    is required for SHAPEIT to work.
+    This rule is somewhat data-specific
+    and may be obsolete in the future.
+
+    The Python script just hardcodes
+    QUAL and FILTER to 60 and PASS for
+    all calls in the ref panel. Unclear
+    if SHAPEIT looks at those values at all,
+    just a precaution.
+    """
+    input:
+        ref_panel = lambda wildcards: DIR_GLOBAL_REF.joinpath(
+            config["panel_vcfs"][wildcards.panel]["biallelic"]
+        )
+    output:
+        ref_panel = DIR_LOCAL_REF.joinpath(
+            f"{ref}_{panel}.balc.vcf.gz"
+        ),
+        tbi = DIR_LOCAL_REF.joinpath(
+            f"{ref}_{panel}.balc.vcf.gz.tbi"
+        )
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_MEDIUM
+    resources:
+        mem_mb=lambda wildcards, attempt: 16384 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt * attempt
+    params:
+        script=find_script("set_qual_filter")
+    shell:
+        "bcftools view --output-type v {input.ref_panel}"
+            " | "
+        "{params.script}"
+            " | "
+        "bcftools plugin fill-tags --threads {threads} --output-type z9 --output {output.ref_panel} /dev/stdin -- -t AN,AC,AF"
+            " && "
+        "tabix -p vcf --threads {threads} {output.ref_panel}"
+
+
 rule phase_samples_by_chrom:
     input:
         vcf = lambda wildcards: expand(
@@ -33,9 +75,7 @@ rule phase_samples_by_chrom:
         ),
         male_samples = rules.dump_list_of_males.output.lst,
         recomb_map = load_recombination_map,
-        ref_panel = lambda wildcards: DIR_GLOBAL_REF.joinpath(
-            config["panel_vcfs"][wildcards.panel]["biallelic"]
-        ),
+        ref_panel = rules.fix_ref_panel_vcf.output.vcf
     output:
         bcf = DIR_PROC.joinpath(
             "17-personal-ref", "phasing_by_chrom",
