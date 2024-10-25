@@ -135,7 +135,7 @@ rule concat_region_sample_genotypes:
         mem_mb=lambda wildcards, attempt: 24576 + 24576 * attempt,
         time_hrs=lambda wildcards, attempt: 11 * attempt
     shell:
-        "bcftools concat --threads {threads} --output-format z9 --output {output.vcf} --file-list {input.fofn}"
+        "bcftools concat --threads {threads} --output-type z9 --output {output.vcf} --file-list {input.fofn}"
             " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 

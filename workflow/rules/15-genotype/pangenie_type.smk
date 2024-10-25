@@ -100,9 +100,9 @@ rule convert_multiallelic_to_biallelic_repr:
     input:
         vcf = rules.compress_index_pangenie_vcf.output.vcf,
         tbi = rules.compress_index_pangenie_vcf.output.tbi,
-        ref_panel = lambda wildcards: DIR_LOCAL_REF.joinpath(
+        ref_panel = lambda wildcards: DIR_GLOBAL_REF.joinpath(
             config["panel_vcfs"][wildcards.panel]["biallelic"]
-        ).with_suffix(""),
+        ),
     output:
         vcf = DIR_PROC.joinpath(
             "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.balc.vcf.gz"
