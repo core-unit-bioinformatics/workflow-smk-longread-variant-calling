@@ -32,7 +32,10 @@ rule phase_samples_by_chrom:
             allow_missing=True
         ),
         male_samples = rules.dump_list_of_males.output.lst,
-        recomb_map = load_recombination_map
+        recomb_map = load_recombination_map,
+        ref_panel = lambda wildcards: DIR_GLOBAL_REF.joinpath(
+            config["panel_vcfs"][wildcards.panel]["biallelic"]
+        ),
     output:
         bcf = DIR_PROC.joinpath(
             "17-personal-ref", "phasing_by_chrom",
@@ -58,7 +61,7 @@ rule phase_samples_by_chrom:
         haploids=lambda wildcards, input: f"--haploids {input.male_samples}" if wildcards.chrom in ["chrX", "chrY"] else "",
         recmap=lambda wildcards, input: f"--map {input.recomb_map}" if wildcards.chrom != "chrY" else ""
     shell:
-        "SHAPEIT5_phase_common --input {input.vcf} --region {wildcards.chrom} {params.haploids} {params.recmap} --output {output.bcf} --thread {threads} &> {log}"
+        "SHAPEIT5_phase_common --input {input.vcf} --reference {input.ref_panel} --region {wildcards.chrom} {params.haploids} {params.recmap} --output {output.bcf} --thread {threads} &> {log}"
 
 
 rule convert_phased_to_vcf:
