@@ -36,10 +36,10 @@ rule fix_ref_panel_vcf:
         )
     output:
         ref_panel = DIR_LOCAL_REF.joinpath(
-            f"{ref}_{panel}.balc.vcf.gz"
+            "{ref}_{panel}.balc.vcf.gz"
         ),
         tbi = DIR_LOCAL_REF.joinpath(
-            f"{ref}_{panel}.balc.vcf.gz.tbi"
+            "{ref}_{panel}.balc.vcf.gz.tbi"
         )
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
