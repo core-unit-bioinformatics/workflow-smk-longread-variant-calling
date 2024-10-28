@@ -123,7 +123,7 @@ rule convert_phased_to_vcf:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     shell:
-        "bcftools view --threads {threads} --output-format z9 --output {output.vcf} {input.bcf}"
+        "bcftools view --threads {threads} --output-type z9 --output {output.vcf} {input.bcf}"
             " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 
@@ -180,7 +180,7 @@ rule concat_phased_chrom_vcfs:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     shell:
-        "bcftools concat --threads {threads} --file-list {input.lst} --output-format z9 --output {output.vcf}"
+        "bcftools concat --threads {threads} --file-list {input.lst} --output-type z9 --output {output.vcf}"
             " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 
