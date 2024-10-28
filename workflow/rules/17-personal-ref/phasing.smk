@@ -129,16 +129,23 @@ rule convert_phased_to_vcf:
 
 
 localrules: create_phased_vcf_fofn
+# DEBUG / TODO
+# SHAPEIT simply segfaults w/o recombination map file,
+# which obviously does not exist for chrY. Really annoying
+# that tools are not designed to process a complete human genome ...
+# Unclear: "the phasing" for chrY has to be implemented in some
+# post-processing step
+_TEMP_FIX_CHROMOSOMES = [c for c in CHROMOSOMES if c != "chrY"]
 rule create_phased_vcf_fofn:
     input:
         vcfs = expand(
             rules.convert_phased_to_vcf.output.vcf,
-            chrom=CHROMOSOMES,
+            chrom=_TEMP_FIX_CHROMOSOMES,
             allow_missing=True
         ),
         tbi = expand(
             rules.convert_phased_to_vcf.output.tbi,
-            chrom=CHROMOSOMES,
+            chrom=_TEMP_FIX_CHROMOSOMES,
             allow_missing=True
         )
     output:
