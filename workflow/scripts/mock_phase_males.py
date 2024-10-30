@@ -18,6 +18,9 @@ def parse_command_line():
 
     args = parser.parse_args()
 
+    # to make fileinput switch to stdin
+    sys.argv = sys.argv[:1]
+
     return args
 
 
@@ -67,7 +70,7 @@ def main():
 
     phase_line = fnt.partial(mock_phase_genotypes, args=(indices_female, indices_male))
 
-    for line in fileinput.input(files=(sys.stdin,), encoding="utf-8"):
+    for line in fileinput.input(encoding="utf-8"):
         if line.startswith("##"):
             sys.stdout.write(line)
         elif line.startswith("#CHROM"):
