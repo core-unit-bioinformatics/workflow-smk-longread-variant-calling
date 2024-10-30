@@ -45,6 +45,10 @@ def mock_phase_genotypes(indices_female, indices_male, genotypes):
 
     columns = genotypes.strip().split()
 
+    # TODO - ?
+    # Need to check if GQ is part of the VCF
+    # Generally the case?
+    # Should be set here as well as 0
     for female_idx in indices_female:
         columns[female_idx] = "0|0"
 
