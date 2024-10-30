@@ -157,14 +157,12 @@ rule mock_phase_males:
     output:
         vcf = DIR_PROC.joinpath(
             "17-personal-ref", "convert_vcf",
-            "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz"
+            "SAMPLES_{read_type}_{ref}_{panel}.ps.chrY.vcf.gz"
         ),
         tbi = DIR_PROC.joinpath(
             "17-personal-ref", "convert_vcf",
-            "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz.tbi"
+            "SAMPLES_{read_type}_{ref}_{panel}.ps.chrY.vcf.gz.tbi"
         )
-    wildcard_constraints:
-        chrom="chrY"
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW
