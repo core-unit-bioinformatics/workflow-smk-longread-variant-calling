@@ -24,7 +24,7 @@ rule sv_call_sniffles_hifi:
             read_type="hifi",
             allow_missing=True
         ),
-        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref = lambda wildcards: load_reference_genome(wildcards),
         ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
         # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
@@ -78,7 +78,7 @@ rule sv_call_sniffles_mosaic_hifi:
             read_type="hifi",
             allow_missing=True
         ),
-        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref = lambda wildcards: load_reference_genome(wildcards),
         ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
         # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
@@ -139,7 +139,7 @@ rule sv_call_cutesv_hifi:
             read_type="hifi",
             allow_missing=True
         ),
-        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref = lambda wildcards: load_reference_genome(wildcards),
         ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
         # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
@@ -227,7 +227,7 @@ rule sv_discover_pbsv_hifi:
 
 rule sv_call_pbsv_hifi:
     input:
-        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref = lambda wildcards: load_reference_genome(wildcards),
         ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
         # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
         # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
