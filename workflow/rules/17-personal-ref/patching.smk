@@ -36,7 +36,7 @@ rule generate_consensus_sequence:
         time_hrs=lambda wildcards, attempt: attempt
     shell:
         "bcftools consensus --samples {wildcards.sample} --haplotype {wildcards.hap} --exclude 'FMT/GQ<20' "
-        "--fasta-ref {input.ref_genome} --chain {output.chain} 2> {log}"
+        "--fasta-ref {input.ref_genome} --chain {output.chain} {input.vcf} 2> {log}"
             " | "
         "bgzip > {output.fasta}"
             " && "
