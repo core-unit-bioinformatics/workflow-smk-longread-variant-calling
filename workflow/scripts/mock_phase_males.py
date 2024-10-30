@@ -32,6 +32,9 @@ def find_sex_indices(header_line, male_samples):
         else:
             indices_female.append(pos)
 
+    assert indices_female
+    assert indices_male
+
     return tuple(indices_female), tuple(indices_male)
 
 
@@ -55,8 +58,9 @@ def main():
 
     args = parse_command_line()
 
-    with open(args.male_sample, "r") as listing:
-        male_samples = listing.read().strip().split()
+    with open(args.male_samples, "r") as listing:
+        male_samples = set(listing.read().strip().split())
+    assert male_samples
 
     indices_female = None
     indices_male = None
