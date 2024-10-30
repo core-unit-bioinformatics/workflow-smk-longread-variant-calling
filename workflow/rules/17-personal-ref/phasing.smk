@@ -155,7 +155,14 @@ rule mock_phase_males:
         ),
         male_samples = rules.dump_list_of_males.output.lst,
     output:
-
+        vcf = DIR_PROC.joinpath(
+            "17-personal-ref", "convert_vcf",
+            "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz"
+        ),
+        tbi = DIR_PROC.joinpath(
+            "17-personal-ref", "convert_vcf",
+            "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz.tbi"
+        )
     wildcard_constraints:
         chrom="chrY"
     conda:
