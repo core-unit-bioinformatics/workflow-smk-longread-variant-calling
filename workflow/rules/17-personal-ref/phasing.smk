@@ -95,14 +95,23 @@ rule phase_samples_by_chrom:
         DIR_ENVS.joinpath("phasing.yaml")
     threads: CPU_HIGH
     resources:
-        mem_mb=lambda wildcards, attempt: 32768 + 32768 * attempt,
-        time_hrs=lambda wildcards, attempt: 11 * attempt
+        mem_mb=lambda wildcards, attempt: 4096 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
     params:
         haploids=lambda wildcards, input: f"--haploids {input.male_samples}" if wildcards.chrom in ["chrX", "chrY"] else "",
         recmap=lambda wildcards, input: f"--map {input.recomb_map}" if wildcards.chrom != "chrY" else ""
     shell:
         "SHAPEIT5_phase_common --input {input.vcf} --reference {input.ref_panel} --region {wildcards.chrom} {params.haploids} {params.recmap} --output {output.bcf} --thread {threads} &> {log}"
 
+
+# DEBUG / TODO
+# SHAPEIT simply segfaults w/o recombination map file,
+# which obviously does not exist for chrY. Really annoying
+# that tools are not designed to process a complete human genome ...
+# Unclear: "the phasing" for chrY has to be implemented in some
+# post-processing step
+_TEMP_FIX_CHROMOSOMES = [c for c in CHROMOSOMES if c != "chrY"]
+_TEMP_CONSTRAINT_CHROMOSOMES = "(" + "|".join(_TEMP_FIX_CHROMOSOMES) + ")"
 
 rule convert_phased_to_vcf:
     input:
@@ -116,6 +125,8 @@ rule convert_phased_to_vcf:
             "17-personal-ref", "convert_vcf",
             "SAMPLES_{read_type}_{ref}_{panel}.ps.{chrom}.vcf.gz.tbi"
         )
+    wildcard_constraints:
+        chrom=_TEMP_CONSTRAINT_CHROMOSOMES
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW
@@ -128,14 +139,45 @@ rule convert_phased_to_vcf:
         "tabix -p vcf --threads {threads} {output.vcf}"
 
 
+rule mock_phase_males:
+    input:
+        vcf = lambda wildcards: expand(
+            rules.region_merge_and_fill_sample_genotypes.output.vcf,
+            chrom="chrY",
+            allele_repr="balc",
+            allow_missing=True
+        ),
+        tbi = lambda wildcards: expand(
+            rules.region_merge_and_fill_sample_genotypes.output.tbi,
+            chrom="chrY",
+            allele_repr="balc",
+            allow_missing=True
+        ),
+        male_samples = rules.dump_list_of_males.output.lst,
+    output:
+
+    wildcard_constraints:
+        chrom="chrY"
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_LOW
+    resources:
+        mem_mb=lambda wildcards, attempt: 4096 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
+    params:
+        script=find_script("mock_phase_males")
+    shell:
+        "bcftools view --output-type v {input.vcf}"
+            " | "
+        "{params.script} --male-samples {input.male_samples}"
+            " | "
+        "bcftools view --output-type z9 --threads {threads} --output {output.vcf}"
+            " && "
+        "tabix -p vcf --threads {threads} {output.vcf}"
+
+
+
 localrules: create_phased_vcf_fofn
-# DEBUG / TODO
-# SHAPEIT simply segfaults w/o recombination map file,
-# which obviously does not exist for chrY. Really annoying
-# that tools are not designed to process a complete human genome ...
-# Unclear: "the phasing" for chrY has to be implemented in some
-# post-processing step
-_TEMP_FIX_CHROMOSOMES = [c for c in CHROMOSOMES if c != "chrY"]
 rule create_phased_vcf_fofn:
     input:
         vcfs = expand(
@@ -147,7 +189,9 @@ rule create_phased_vcf_fofn:
             rules.convert_phased_to_vcf.output.tbi,
             chrom=_TEMP_FIX_CHROMOSOMES,
             allow_missing=True
-        )
+        ),
+        vcf_chry = rules.mock_phase_males.output.vcf,
+        vcf_tbi = rules.mock_phase_males.output.tbi
     output:
         lst = DIR_PROC.joinpath(
             "17-personal-ref", "convert_vcf",
@@ -162,6 +206,10 @@ rule create_phased_vcf_fofn:
             full_path = WORKDIR.joinpath(rel_path)
             assert full_path.is_file()
             buffer.write(rel_path + "\n")
+
+        full_path.WORKDIR.joinpath(input.vcf_chry)
+        assert full_path.is_file()
+        buffer.write(input.vcf_chry + "\n")
 
         with open(output.lst, "w") as dump:
             _ = dump.write(buffer.getvalue())
