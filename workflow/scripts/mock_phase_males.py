@@ -68,13 +68,14 @@ def main():
     indices_female = None
     indices_male = None
 
-    phase_line = fnt.partial(mock_phase_genotypes, args=(indices_female, indices_male))
+    phase_line = None
 
     for line in fileinput.input(encoding="utf-8"):
         if line.startswith("##"):
             sys.stdout.write(line)
         elif line.startswith("#CHROM"):
             indices_female, indices_male = find_sex_indices(line, male_samples)
+            phase_line = fnt.partial(mock_phase_genotypes, indices_female, indices_male)
             sys.stdout.write(line)
         else:
             phased_gt = phase_line(line)
