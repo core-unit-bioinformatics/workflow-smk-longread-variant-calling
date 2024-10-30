@@ -18,6 +18,7 @@ include: "15-genotype/merge_genotyped.smk"
 
 include: "17-personal-ref/pyutils.smk"
 include: "17-personal-ref/phasing.smk"
+include: "17-personal-ref/patching.smk"
 
 include: "20-postalign/process.smk"
 
