@@ -30,6 +30,38 @@ assert isinstance(CHROMOSOMES, list)
 CONTAINER_STORE = pathlib.Path(config.get("container_store", WORKDIR)).resolve(strict=True)
 
 
+#######
+### For the time being: only used for personalized reference genome
+
+SAMPLE_PAIRS = None
+CONTROL_SAMPLES = None
+CASE_SAMPLES = None
+
+_sample_pairs = config.get("sample_pairs", None)
+if _sample_pairs is not None:
+
+    SAMPLE_PAIRS = dict()
+    CONTROL_SAMPLES = []
+    CASE_SAMPLES = []
+
+    for pair_label, sample_pair in _sample_pairs.items():
+        assert len(sample_pair) == 2
+        control_sample, case_sample = sample_pair
+        pairing = {
+            "control": control_sample,
+            "case": case_sample,
+            "label": pair_label
+        }
+        SAMPLE_PAIRS[pair_label] = pairing
+        assert case_sample not in SAMPLE_PAIRS
+        SAMPLE_PAIRS[case_sample] = control_sample
+        assert control_sample not in SAMPLE_PAIRS
+        SAMPLE_PAIRS[control_sample] = case_sample
+
+        CONTROL_SAMPLES.append(control_sample)
+        CASE_SAMPLES.append(case_sample)
+
+
 #############################
 ### Check if user-specified
 ### ROI files are available
