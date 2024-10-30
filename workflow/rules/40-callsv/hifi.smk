@@ -24,8 +24,10 @@ rule sv_call_sniffles_hifi:
             read_type="hifi",
             allow_missing=True
         ),
-        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
-        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
+        # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
         vcf = DIR_PROC.joinpath(
             "40-callsv", "{sample}_hifi.{aligner}-sniffles.{ref}.vcf"
@@ -76,8 +78,10 @@ rule sv_call_sniffles_mosaic_hifi:
             read_type="hifi",
             allow_missing=True
         ),
-        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
-        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
+        # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
         vcf = DIR_PROC.joinpath(
             "40-callsv", "{sample}_hifi.{aligner}-sniffles.mosaic.{ref}.vcf"
@@ -135,8 +139,10 @@ rule sv_call_cutesv_hifi:
             read_type="hifi",
             allow_missing=True
         ),
-        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
-        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
+        # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     output:
         vcf = DIR_PROC.joinpath(
             "40-callsv", "{sample}_hifi.{aligner}-cutesv.{ref}.vcf"
@@ -221,8 +227,10 @@ rule sv_discover_pbsv_hifi:
 
 rule sv_call_pbsv_hifi:
     input:
-        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
-        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+        ref = lambda wildcards: load_reference_genome(wildcards)
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
+        # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
 
         svsig = expand(DIR_PROC.joinpath(
             "40-callsv", "{{sample}}_hifi.{{aligner}}-pbsv.{{ref}}.{chrom}.svsig.gz"),
@@ -306,3 +314,16 @@ rule run_hifi_sv_calling:
             sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
             ref=USE_REF_GENOMES
         )
+
+
+if SAMPLE_PAIRS is not None:
+    rule run_hifi_sv_calling_personalized:
+        input:
+            vcf = expand(
+                DIR_PROC.joinpath(
+                    "40-callsv", "{sample}_hifi.{sv_calling_toolchain}.{ref}.vcf"
+                ),
+                sample=HIFI_SAMPLES,
+                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                ref=["prg"]
+            )

@@ -33,9 +33,9 @@ run_hifi_aligner:
   - minimap2
 
 run_hifi_sv_toolchain:
-  - minimap2, cuteSV
   - minimap2, sniffles
   - minimap2, pbsv
+  # - minimap2, cuteSV
 
 run_hifi_cnv_toolchain:
   - minimap2, hificnv

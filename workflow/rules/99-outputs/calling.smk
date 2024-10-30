@@ -31,6 +31,13 @@ if HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS:
     )
 
 
+if HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS and SAMPLE_PAIRS is not None:
+
+    CALL_HIFI_SV_OUTPUT.extend(
+        rules.run_hifi_finalize_sv_callsets_personalized.input
+    )
+
+
 if HIFI_CNV_CALLING_TOOLCHAIN_WILDCARDS:
     CALL_HIFI_CNV_OUTPUT.extend(
         rules.run_all_cnv_calling_pbcnv.input.cn_est

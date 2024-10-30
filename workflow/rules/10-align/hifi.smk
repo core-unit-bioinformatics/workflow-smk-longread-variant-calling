@@ -12,7 +12,8 @@ rule align_minimap2_hifi:
     """
     input:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
-        reference = lambda wildcards: REF_GENOMES[wildcards.ref]
+        reference = lambda wildcards: load_reference_genome(wildcards)
+        #reference = lambda wildcards: REF_GENOMES[wildcards.ref]
     output:
         sort = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.mm2.{ref}.sort.bam"
@@ -78,7 +79,8 @@ rule align_lra_hifi:
     """
     input:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
-        reference = lambda wildcards: REF_GENOMES[wildcards.ref]
+        reference = lambda wildcards: load_reference_genome(wildcards)
+        #reference = lambda wildcards: REF_GENOMES[wildcards.ref]
     output:
         sort = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.lra.{ref}.sort.bam"
@@ -150,7 +152,8 @@ rule align_pbmm2_hifi:
     """
     input:
         reads = lambda wildcards: MAP_PATHID_TO_FILE_INFO[wildcards.path_id]["path"],
-        reference = lambda wildcards: REF_GENOMES[wildcards.ref]
+        reference = lambda wildcards: load_reference_genome(wildcards)
+        #reference = lambda wildcards: REF_GENOMES[wildcards.ref]
     output:
         sort = temp(DIR_PROC.joinpath(
             "10-align", "{sample}_hifi_{path_id}.pbmm2.{ref}.sort.bam"

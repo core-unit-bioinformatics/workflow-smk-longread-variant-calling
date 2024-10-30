@@ -63,3 +63,61 @@ def expand_hifi_reads(*args):
             expand_wildcards.append(wildcards)
 
     return expand_wildcards
+
+
+def load_reference_genome(wildcards, index_file=False):
+
+    if wildcards.ref in REF_GENOMES:
+        if index_file:
+            ref_file = REF_GENOMES[(wildcards.ref, "fai")]
+        else:
+            ref_file = REF_GENOMES[wildcards.ref]
+    else:
+        assert wildcards.ref == "prg"
+        if hasattr(wildcards, "read_type"):
+            read_type = wildcards.read_type
+        else:
+            read_type = "hifi"
+
+        ####################################
+        # DEBUG - TEMP DEV - DEVELOP - TODO
+        panel_name = "hgsvc3hprc"
+        prg_ref = "t2tv2"
+        ####################################
+
+        assert CONTROL_SAMPLES
+        assert CASE_SAMPLES
+
+        paired_sample = SAMPLE_PAIRS[wildcards.sample]
+
+        if wildcards.sample in CASE_SAMPLES:
+            assert paired_sample in CONTROL_SAMPLES
+        else:
+            # TODO - unclear decision ... align the
+            # control sample reads to its own personalized
+            # genome to check for shaky regions in the
+            # alignment. However, given the intended use case
+            # of low-cov controls, this will likely not be
+            # very informative?
+            paired_sample = wildcards.sample
+            assert paired_sample in CONTROL_SAMPLES
+
+        if index_file:
+            ref_file = expand(
+                rules.combine_consensus_haplotypes.output.fasta,
+                sample=paired_sample,
+                read_type=read_type,
+                ref=prg_ref,
+                panel=panel_name
+            )
+
+        else:
+            ref_file = expand(
+                rules.combine_consensus_haplotypes.output.fai,
+                sample=paired_sample,
+                read_type=read_type,
+                ref=prg_ref,
+                panel=panel_name
+            )
+
+    return ref_file

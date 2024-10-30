@@ -57,3 +57,32 @@ rule run_hifi_finalize_sv_callsets:
             sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
             ref=USE_REF_GENOMES
         ),
+
+
+if SAMPLE_PAIRS is not None:
+    rule run_hifi_finalize_sv_callsets_personalized:
+        input:
+            vcf = expand(
+                DIR_RES.joinpath(
+                    "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.vcf.gz"
+                ),
+                sample=HIFI_SAMPLES,
+                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                ref=["prg"]
+            ),
+            txt_stats = expand(
+                DIR_RES.joinpath(
+                    "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.vcf-stats.txt"
+                ),
+                sample=HIFI_SAMPLES,
+                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                ref=["prg"]
+            ),
+            tsv_stats = expand(
+                DIR_RES.joinpath(
+                    "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.summary-stats.tsv"
+                ),
+                sample=HIFI_SAMPLES,
+                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                ref=["prg"]
+            ),

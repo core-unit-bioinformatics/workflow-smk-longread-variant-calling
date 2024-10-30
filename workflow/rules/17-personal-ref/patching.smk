@@ -1,5 +1,10 @@
 
 rule generate_consensus_sequence:
+    """The output FASTA has adapted headers
+    indicating that the genome is a PRG.
+    The chain file needs to be adapted in a postprocessing
+    step if needed, though.
+    """
     input:
         ref_genome = lambda wildcards: REF_GENOMES[wildcards.ref],
         vcf = rules.concat_phased_chrom_vcfs.output.vcf,
@@ -34,11 +39,42 @@ rule generate_consensus_sequence:
     resources:
         mem_mb=lambda wildcards, attempt: 24576 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
+    params:
+        script=find_script("fix_prg_header")
     shell:
         "bcftools consensus --samples {wildcards.sample} --haplotype {wildcards.hap} --exclude 'FMT/GQ<20' "
         "--fasta-ref {input.ref_genome} --chain {output.chain} {input.vcf} 2> {log}"
             " | "
+        "{params.script} --sample {wildcards.sample} --haplotype {wildcards.hap}"
+            " | "
         "bgzip > {output.fasta}"
+            " && "
+        "samtools faidx {output.fasta}"
+
+
+rule combine_consensus_haplotypes:
+    input:
+        haps = expand(
+            rules.generate_consensus_sequence.output.fasta,
+            hap=[1,2],
+            allow_missing=True
+        )
+    output:
+        fasta = DIR_RES.joinpath(
+            "personal_reference",
+            "{sample}_{read_type}_{ref}_{panel}.wg.fasta.gz"
+        ),
+        fai = DIR_RES.joinpath(
+            "personal_reference",
+            "{sample}_{read_type}_{ref}_{panel}.wg.fasta.gz.fai"
+        )
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 2048 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
+    shell:
+        "zcat {input.haps} | bgzip > {output.fasta}"
             " && "
         "samtools faidx {output.fasta}"
 
@@ -46,7 +82,7 @@ rule generate_consensus_sequence:
 rule run_all_generate_consensus:
     input:
         fasta = expand(
-            rules.generate_consensus_sequence.output.fasta,
+            rules.combine_consensus_haplotypes.output.fasta,
             sample=CONTROL_SAMPLES,
             read_type=["hifi"],
             ref=["t2tv2"],
