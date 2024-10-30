@@ -212,7 +212,7 @@ rule create_phased_vcf_fofn:
             assert full_path.is_file()
             buffer.write(rel_path + "\n")
 
-        full_path.WORKDIR.joinpath(input.vcf_chry)
+        full_path = WORKDIR.joinpath(input.vcf_chry)
         assert full_path.is_file()
         buffer.write(input.vcf_chry + "\n")
 
