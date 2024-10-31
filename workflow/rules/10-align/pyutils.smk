@@ -104,7 +104,7 @@ def load_reference_genome(wildcards, index_file=False):
 
         if index_file:
             ref_file = expand(
-                rules.combine_consensus_haplotypes.output.fasta,
+                rules.combine_consensus_haplotypes.output.fai,
                 sample=paired_sample,
                 read_type=read_type,
                 ref=prg_ref,
@@ -113,7 +113,7 @@ def load_reference_genome(wildcards, index_file=False):
 
         else:
             ref_file = expand(
-                rules.combine_consensus_haplotypes.output.fai,
+                rules.combine_consensus_haplotypes.output.fasta,
                 sample=paired_sample,
                 read_type=read_type,
                 ref=prg_ref,
