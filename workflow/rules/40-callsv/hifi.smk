@@ -210,6 +210,10 @@ rule sv_discover_pbsv_hifi:
         DIR_RSRC.joinpath(
             "40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.{chrom}.discover.rsrc"
         ),
+    wildcard_constraints:
+        sample=CONSTRAINT_SAMPLES,
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES
     conda:
         DIR_ENVS.joinpath("caller", "pbsv.yaml")
     resources:
@@ -243,6 +247,10 @@ rule sv_call_pbsv_hifi:
         DIR_LOG.joinpath("40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.call.log"),
     benchmark:
         DIR_RSRC.joinpath("40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.call.rsrc"),
+    wildcard_constraints:
+        sample=CONSTRAINT_SAMPLES,
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES
     conda:
         DIR_ENVS.joinpath("caller", "pbsv.yaml")
     threads: CPU_MEDIUM
