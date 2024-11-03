@@ -233,9 +233,9 @@ rule sv_call_pbsv_hifi:
     input:
         ref = lambda wildcards: load_reference_genome(wildcards),
         ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True),
-        svsig = expand(DIR_PROC.joinpath(
+        svsig = lambda wildcards: expand(DIR_PROC.joinpath(
             "40-callsv", "{{sample}}_hifi.{{aligner}}-pbsv.{{ref}}.{chrom}.svsig.gz"),
-            chrom=CHROMOSOMES
+            chrom=load_reference_chromosomes(wildcards)
         )
     output:
         vcf = DIR_PROC.joinpath("40-callsv", "{sample}_hifi.{aligner}-pbsv.{ref}.vcf"),

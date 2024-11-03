@@ -45,6 +45,10 @@ rule short_call_deepvariant_hifi:
 
 
 rule run_deepvariant_hifi_calling:
+    """TODO - the way the chromosomes
+    are loaded here is not yet compatible
+    with a personalized reference genome.
+    """
     input:
         vcfs = expand(
             rules.short_call_deepvariant_hifi.output.vcfgz,

@@ -121,3 +121,38 @@ def load_reference_genome(wildcards, index_file=False):
             )
 
     return ref_file
+
+
+def load_reference_chromosomes(wildcards):
+    """TODO [?] / IMPLICIT CONSTRAINT / HARDCODED ASSUMPTION
+    this function encodes the assumption that a PRG
+    is only constructed for the control
+    samples (if configured by the user).
+    Hence, a wildcards object containing
+    a CASE sample swaps out that sample name
+    with the associated CONTROL sample via
+    the SAMPLE_PAIRS mapping.
+    """
+
+    if wildcards.ref in REF_GENOMES:
+        chrom_list = CHROMOSOMES
+    else:
+        assert wildcards.ref == "prg"
+        assert SAMPLE_PAIRS
+
+        if wildcards.sample in CASE_SAMPLES:
+            prg_sample = SAMPLE_PAIRS[wildcards.sample]
+        else:
+            prg_sample = wildcards.sample
+
+        chrom_list = []
+        for chrom in CHROMOSOMES:
+            chrom_h1 = f"{chrom}.PRG.{prg_sample}.H1"
+            chrom_h2 = f"{chrom}.PRG.{prg_sample}.H2"
+            chrom_list.append(chrom_h1)
+            chrom_list.append(chrom_h2)
+        chrom_list = sorted(chrom_list)
+
+    assert chrom_list
+
+    return chrom_list
