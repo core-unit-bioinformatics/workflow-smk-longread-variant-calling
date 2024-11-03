@@ -38,7 +38,8 @@ rule merge_alignments_per_sample:
     wildcard_constraints:
         sample=CONSTRAINT_SAMPLES,
         aligner=CONSTRAINT_HIFI_ALIGNER,
-        ref=CONSTRAINT_REF_GENOMES
+        ref=CONSTRAINT_REF_GENOMES,
+        read_type=CONSTRAINT_READ_TYPE
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW
@@ -72,6 +73,11 @@ rule split_merged_alignments:
         DIR_LOG.joinpath(
             "20-postalign", "split", "{sample}_{read_type}.{aligner}.{ref}.sort.samtools-split.log"
         )
+    wildcard_constraints:
+        sample=CONSTRAINT_SAMPLES,
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES,
+        read_type=CONSTRAINT_READ_TYPE
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW
@@ -101,6 +107,11 @@ rule compute_alignment_flagstats:
         stats = DIR_RES.joinpath(
             "statistics", "aln_flagstats", "{sample}_{read_type}.{aligner}.{ref}.{bam_type}.flagstats.txt"
         )
+    wildcard_constraints:
+        sample=CONSTRAINT_SAMPLES,
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES,
+        read_type=CONSTRAINT_READ_TYPE
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     shell:

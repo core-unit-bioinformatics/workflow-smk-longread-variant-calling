@@ -2,6 +2,10 @@ import sys
 
 CONSTRAINT_SAMPLES = _build_constraint(SAMPLES)
 
+# TODO infer input from known inputs
+CONSTRAINT_READ_TYPE = _build_constraint(["hifi", "ont"])
+
+
 # Prepare lookup structure for
 # reference genomes
 _user_ref_genomes = config.get("reference_genomes", None)
