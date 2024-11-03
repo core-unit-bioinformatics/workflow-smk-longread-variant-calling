@@ -1,5 +1,7 @@
 import sys
 
+CONSTRAINT_SAMPLES = _build_constraint(SAMPLES)
+
 # Prepare lookup structure for
 # reference genomes
 _user_ref_genomes = config.get("reference_genomes", None)
@@ -15,7 +17,7 @@ for _ref_label, _ref_file in _user_ref_genomes.items():
     _path_to_idx = _path_to_ref.with_suffix(_ref_fai_suffix)
     REF_GENOMES[(_ref_label, "fai")] = _path_to_idx
     USE_REF_GENOMES.append(_ref_label)
-CONSTRAINT_REF_GENOMES = "(" + "|".join(USE_REF_GENOMES) + ")"
+CONSTRAINT_REF_GENOMES = "(" + "|".join(USE_REF_GENOMES + ["prg"]) + ")"
 
 
 CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
@@ -220,6 +222,8 @@ HIFI_ALIGNER_WILDCARDS = sorted(
         HIFI_ALIGNER_NAME_MAPPING[name.lower()] for name in RUN_HIFI_ALIGNER
     )
 )
+
+CONSTRAINT_HIFI_ALIGNER = _build_constraint(HIFI_ALIGNER_WILDCARDS)
 
 # This dict is populated below to link aligners
 # to run for the individual variant callers

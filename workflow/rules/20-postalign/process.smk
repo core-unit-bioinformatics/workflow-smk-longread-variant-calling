@@ -4,6 +4,10 @@ rule merge_alignments_per_sample:
     This creates disk space overhead by copying
     the data for samples that were sequenced
     with only a single cell - too bad ...
+
+    TODO: constraint for aligner needs to be generalized,
+    is currently only set for hifi reads
+
     """
     input:
         bams = lambda wildcards: expand(
@@ -31,6 +35,10 @@ rule merge_alignments_per_sample:
         DIR_LOG.joinpath(
             "20-postalign", "merge", "{sample}_{read_type}.{aligner}.{ref}.sort.samtools-merge.log",
         )
+    wildcard_constraints:
+        sample=CONSTRAINT_SAMPLES,
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW
