@@ -65,7 +65,7 @@ def expand_hifi_reads(*args):
     return expand_wildcards
 
 
-def load_reference_genome(wildcards, index_file=False):
+def load_reference_genome(wildcards, index_file=False, plain=False):
 
     if wildcards.ref in REF_GENOMES:
         if index_file:
@@ -102,23 +102,25 @@ def load_reference_genome(wildcards, index_file=False):
             paired_sample = wildcards.sample
             assert paired_sample in CONTROL_SAMPLES
 
-        if index_file:
-            ref_file = expand(
-                rules.combine_consensus_haplotypes.output.fai,
-                sample=paired_sample,
-                read_type=read_type,
-                ref=prg_ref,
-                panel=panel_name
-            )
-
+        # super explicit ...
+        if plain and index_file:
+            file_from_rule = rules.decompress_prg_fasta_file.output.fai
+        elif plain and not index_file:
+            file_from_rule = rules.decompress_prg_fasta_file.output.fasta
+        elif not plain and index_file:
+            file_from_rule = rules.combine_consensus_haplotypes.output.fai
+        elif not plain and not index_file:
+            file_from_rule = rules.combine_consensus_haplotypes.output.fasta
         else:
-            ref_file = expand(
-                rules.combine_consensus_haplotypes.output.fasta,
-                sample=paired_sample,
-                read_type=read_type,
-                ref=prg_ref,
-                panel=panel_name
-            )
+            raise
+
+        ref_file = expand(
+            file_from_rule,
+            sample=paired_sample,
+            read_type=read_type,
+            ref=prg_ref,
+            panel=panel_name
+        )
 
     return ref_file
 

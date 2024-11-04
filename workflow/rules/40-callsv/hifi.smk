@@ -235,8 +235,8 @@ rule sv_call_pbsv_hifi:
     # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
     """
     input:
-        ref = lambda wildcards: load_reference_genome(wildcards),
-        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True),
+        ref = lambda wildcards: load_reference_genome(wildcards, plain=True),
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True, plain=True),
         svsig = lambda wildcards: expand(DIR_PROC.joinpath(
             "40-callsv", "{{sample}}_hifi.{{aligner}}-pbsv.{{ref}}.{chrom}.svsig.gz"),
             chrom=load_reference_chromosomes(wildcards)

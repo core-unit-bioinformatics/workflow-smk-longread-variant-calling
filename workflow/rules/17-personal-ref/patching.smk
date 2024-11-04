@@ -79,6 +79,35 @@ rule combine_consensus_haplotypes:
         "samtools faidx {output.fasta}"
 
 
+rule decompress_prg_fasta_file:
+    """This rule only exists to accommodate
+    tools such as pbsv that cannot deal with
+    modern file formats such as gzipped FASTA
+    files ... just overhead ...
+    """
+    input:
+        fagz = rules.combine_consensus_haplotypes.output.fasta
+    output:
+        fasta = temp(DIR_PROC.joinpath(
+            "temp", "prg_plain",
+            "{sample}_{read_type}_{ref}_{panel}.wg.fasta"
+        )),
+        fai = temp(DIR_PROC.joinpath(
+            "temp", "prg_plain",
+            "{sample}_{read_type}_{ref}_{panel}.wg.fasta.fai"
+        ))
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_LOW
+    resources:
+        mem_mb=lambda wildcards, attempt: 2048 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
+    shell:
+        "pigz -c -d -p {threads} {input.fagz} > {output.fasta}
+            " && "
+        "samtools faidx {output.fasta}"
+
+
 rule run_all_generate_consensus:
     input:
         fasta = expand(
