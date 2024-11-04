@@ -103,7 +103,7 @@ rule decompress_prg_fasta_file:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     shell:
-        "pigz -c -d -p {threads} {input.fagz} > {output.fasta}
+        "pigz -c -d -p {threads} {input.fagz} > {output.fasta}"
             " && "
         "samtools faidx {output.fasta}"
 
