@@ -118,6 +118,33 @@ rule compute_alignment_flagstats:
         "samtools flagstats {input.bam} > {output.stats}"
 
 
+rule compute_alignment_stats:
+    input:
+        bam = DIR_PROC.joinpath(
+            "20-postalign", "split", "{sample}_{read_type}.{aligner}.{ref}.{bam_type}.sort.bam"
+        ),
+        bai = DIR_PROC.joinpath(
+            "20-postalign", "split", "{sample}_{read_type}.{aligner}.{ref}.{bam_type}.sort.bam.bai"
+        )
+    output:
+        stats = DIR_RES.joinpath(
+            "statistics", "aln_stats", "{sample}_{read_type}.{aligner}.{ref}.{bam_type}.stats.txt"
+        )
+    wildcard_constraints:
+        sample=CONSTRAINT_SAMPLES,
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES,
+        read_type=CONSTRAINT_READ_TYPE
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_LOW
+    resources:
+        mem_mb=lambda wildcards, attempt: 2048 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt * attempt
+    shell:
+        "samtools stats --threads {threads} {input.bam} > {output.stats}"
+
+
 rule run_all_hifi_align:
     input:
         bams_main = expand(
@@ -142,3 +169,47 @@ rule run_all_hifi_align:
             aligner=HIFI_ALIGNER_WILDCARDS,
             bam_type=["main", "aux"]
         ),
+        bamstats = expand(
+            rules.compute_alignment_stats.output.stats,
+            ref=USE_REF_GENOMES,
+            sample=HIFI_SAMPLES,
+            read_type=["hifi"],
+            aligner=HIFI_ALIGNER_WILDCARDS,
+            bam_type=["main", "aux"]
+            )
+
+
+if SAMPLE_PAIRS is not None:
+    rule run_all_prg_hifi_align:
+        input:
+            bams_main = expand(
+                rules.split_merged_alignments.output.main,
+                read_type=["hifi"],
+                ref=["prg"],
+                sample=HIFI_SAMPLES,
+                aligner=HIFI_ALIGNER_WILDCARDS
+            ),
+            bams_aux = expand(
+                rules.split_merged_alignments.output.aux,
+                read_type=["hifi"],
+                ref=["prg"],
+                sample=HIFI_SAMPLES,
+                aligner=HIFI_ALIGNER_WILDCARDS
+            ),
+            flagstats = expand(
+                rules.compute_alignment_flagstats.output.stats,
+                ref=["prg"],
+                sample=HIFI_SAMPLES,
+                read_type=["hifi"],
+                aligner=HIFI_ALIGNER_WILDCARDS,
+                bam_type=["main", "aux"]
+            ),
+            bamstats = expand(
+                rules.compute_alignment_stats.output.stats,
+                ref=["prg"],
+                sample=HIFI_SAMPLES,
+                read_type=["hifi"],
+                aligner=HIFI_ALIGNER_WILDCARDS,
+                bam_type=["main", "aux"]
+            )
+
