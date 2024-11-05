@@ -61,44 +61,47 @@ rule run_hifi_finalize_sv_callsets:
 
 if SAMPLE_PAIRS is not None:
 
-    if any("sniffles" in toolchain_wildcard for toolchain_wildcard in RUN_HIFI_SV_CALLING_TOOLCHAIN):
+    # TODO --- the extract_variant_reads script also filters by genotype
+    # think about if that makes sense for haploid PRGs
 
-        # this can only work for callers that can report reads --- not pbsv, for example
+    # if any("sniffles" in toolchain_wildcard for toolchain_wildcard in RUN_HIFI_SV_CALLING_TOOLCHAIN):
 
-        rule extract_structural_variant_reads:
-            input:
-                vcf = DIR_RES.joinpath(
-                    "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.vcf.gz"
-                )
-            output:
-                tsv = DIR_RES.joinpath(
-                    "variant_reads", "{sample}_hifi.mm2-sniffles.{ref}.sv.reads.tsv.gz"
-                ),
-                lst = DIR_RES.joinpath(
-                    "variant_reads", "{sample}_hifi.mm2-sniffles.{ref}.sv.reads.lst"
-                )
-            wildcard_constraints:
-                ref = "(prg|prg1|prg2)"
-            conda:
-                DIR_ENVS.joinpath("biotools.yaml")
-            resources:
-                mem_mb=lambda wildcards, attempt: 2048 * attempt
-            params:
-                script=find_script("extract_variant_reads")
-            shell:
-                "zcat {input.vcf} | {params.script} --out-reads {output.lst} | gzip > {output.tsv}"
+    #     # this can only work for callers that can report reads --- not pbsv, for example
+
+    #     rule extract_structural_variant_reads:
+    #         input:
+    #             vcf = DIR_RES.joinpath(
+    #                 "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.vcf.gz"
+    #             )
+    #         output:
+    #             tsv = DIR_RES.joinpath(
+    #                 "variant_reads", "{sample}_hifi.mm2-sniffles.{ref}.sv.reads.tsv.gz"
+    #             ),
+    #             lst = DIR_RES.joinpath(
+    #                 "variant_reads", "{sample}_hifi.mm2-sniffles.{ref}.sv.reads.lst"
+    #             )
+    #         wildcard_constraints:
+    #             ref = "(prg|prg1|prg2)"
+    #         conda:
+    #             DIR_ENVS.joinpath("biotools.yaml")
+    #         resources:
+    #             mem_mb=lambda wildcards, attempt: 2048 * attempt
+    #         params:
+    #             script=find_script("extract_variant_reads")
+    #         shell:
+    #             "zcat {input.vcf} | {params.script} --out-reads {output.lst} | gzip > {output.tsv}"
 
 
-        rule run_all_hifi_variant_reads:
-            input:
-                lst = expand(
-                    rules.extract_structural_variant_reads.output.lst,
-                    sample=CASE_SAMPLES
-                ),
-                tsv = expand(
-                    rules.extract_structural_variant_reads.output.tsv,
-                    sample=CASE_SAMPLES
-                )
+    #     rule run_all_hifi_variant_reads:
+    #         input:
+    #             lst = expand(
+    #                 rules.extract_structural_variant_reads.output.lst,
+    #                 sample=CASE_SAMPLES
+    #             ),
+    #             tsv = expand(
+    #                 rules.extract_structural_variant_reads.output.tsv,
+    #                 sample=CASE_SAMPLES
+    #             )
 
 
     rule run_hifi_finalize_sv_callsets_personalized:
