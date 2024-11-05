@@ -73,7 +73,7 @@ def load_reference_genome(wildcards, index_file=False, plain=False):
         else:
             ref_file = REF_GENOMES[wildcards.ref]
     else:
-        assert wildcards.ref == "prg"
+        assert wildcards.ref.startswith("prg")
         if hasattr(wildcards, "read_type"):
             read_type = wildcards.read_type
         else:
@@ -102,27 +102,72 @@ def load_reference_genome(wildcards, index_file=False, plain=False):
             paired_sample = wildcards.sample
             assert paired_sample in CONTROL_SAMPLES
 
-        # super explicit ...
-        if plain and index_file:
-            file_from_rule = rules.decompress_prg_fasta_file.output.fai
-        elif plain and not index_file:
-            file_from_rule = rules.decompress_prg_fasta_file.output.fasta
-        elif not plain and index_file:
-            file_from_rule = rules.combine_consensus_haplotypes.output.fai
-        elif not plain and not index_file:
-            file_from_rule = rules.combine_consensus_haplotypes.output.fasta
-        else:
-            raise
+        kwargs = {
+            "sample": paired_sample,
+            "read_type": read_type,
+            "ref": prg_ref,
+            "panel": panel_name
+        }
 
-        ref_file = expand(
-            file_from_rule,
-            sample=paired_sample,
-            read_type=read_type,
-            ref=prg_ref,
-            panel=panel_name
-        )
+        if wildcards.ref == "prg":
+            ref_file = _load_diploid_genome_prg(index_file, plain, kwargs)
+        else:
+            hap = wildcards.ref[-1]
+            ref_file = _load_haploid_genome_prg(index_file, plain, hap, kwargs)
 
     return ref_file
+
+
+def _load_diploid_genome_prg(index_file, plain, kwargs):
+
+    if plain and index_file:
+        kwargs["prg_variant"] = "prg"
+        file_from_rule = rules.decompress_prg_fasta_file.output.fai
+    elif plain and not index_file:
+        kwargs["prg_variant"] = "prg"
+        file_from_rule = rules.decompress_prg_fasta_file.output.fasta
+    elif not plain and index_file:
+        file_from_rule = rules.combine_consensus_haplotypes.output.fai
+    elif not plain and not index_file:
+        file_from_rule = rules.combine_consensus_haplotypes.output.fasta
+    else:
+        raise
+
+    formatted_file = expand(
+        file_from_rule,
+        **kwargs,
+        allow_missing=True
+    )
+
+    return formatted_file
+
+
+def _load_haploid_genome_prg(index_file, plain, hap, kwargs):
+
+    assert int(hap)
+
+    if plain and index_file:
+        kwargs["prg_variant"] = f"prg{hap}"
+        file_from_rule = rules.decompress_prg_fasta_file.output.fai
+    elif plain and not index_file:
+        kwargs["prg_variant"] = f"prg{hap}"
+        file_from_rule = rules.decompress_prg_fasta_file.output.fasta
+    elif not plain and index_file:
+        kwargs["hap"] = hap
+        file_from_rule = rules.generate_consensus_sequence.output.fai
+    elif not plain and not index_file:
+        kwargs["hap"] = hap
+        file_from_rule = rules.generate_consensus_sequence.output.fasta
+    else:
+        raise
+
+    formatted_file = expand(
+        file_from_rule,
+        **kwargs,
+        allow_missing=True
+    )
+
+    return formatted_file
 
 
 def load_reference_chromosomes(wildcards):
@@ -139,7 +184,7 @@ def load_reference_chromosomes(wildcards):
     if wildcards.ref in REF_GENOMES:
         chrom_list = CHROMOSOMES
     else:
-        assert wildcards.ref == "prg"
+        assert wildcards.ref.startswith("prg")
         assert SAMPLE_PAIRS
 
         if wildcards.sample in CASE_SAMPLES:
@@ -151,8 +196,15 @@ def load_reference_chromosomes(wildcards):
         for chrom in CHROMOSOMES:
             chrom_h1 = f"{chrom}.PRG.{prg_sample}.H1"
             chrom_h2 = f"{chrom}.PRG.{prg_sample}.H2"
-            chrom_list.append(chrom_h1)
-            chrom_list.append(chrom_h2)
+            if wildcards.ref == "prg":
+                chrom_list.append(chrom_h1)
+                chrom_list.append(chrom_h2)
+            elif wildcards.ref == "prg1":
+                chrom_list.append(chrom_h1)
+            elif wildcards.ref == "prg2":
+                chrom_list.append(chrom_h2)
+            else:
+                raise RuntimeError(wildcards)
         chrom_list = sorted(chrom_list)
 
     assert chrom_list

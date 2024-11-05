@@ -47,7 +47,7 @@ rule sv_call_sniffles_hifi:
         time_hrs=lambda wildcards, attempt: attempt**3,
     params:
         min_sv_len = MIN_SV_LEN_CALL,
-        min_mapq = MIN_MAPQ,
+        min_mapq = lambda wildcards: load_min_mapq_threshold(wildcards),
         min_cov = MIN_COV,
         min_aln_len = MIN_ALN_LEN
     shell:
@@ -103,7 +103,7 @@ rule sv_call_sniffles_mosaic_hifi:
         time_hrs=lambda wildcards, attempt: attempt**3,
     params:
         min_sv_len = MIN_SV_LEN_CALL,
-        min_mapq = MIN_MAPQ,
+        min_mapq = lambda wildcards: load_min_mapq_threshold(wildcards),
         min_cov = MIN_COV,
         min_aln_len = MIN_ALN_LEN
     shell:
@@ -159,7 +159,7 @@ rule sv_call_cutesv_hifi:
         time_hrs=lambda wildcards, attempt: attempt*attempt,
     params:
         min_sv_len = MIN_SV_LEN_CALL,
-        min_mapq = MIN_MAPQ,
+        min_mapq = lambda wildcards: load_min_mapq_threshold(wildcards),
         min_cov = MIN_COV,
         min_aln_len = MIN_ALN_LEN,
         tmp_wd = lambda wildcards, output: pathlib.Path(output.vcf).with_suffix(".wd.tmp")
@@ -221,7 +221,7 @@ rule sv_discover_pbsv_hifi:
         time_hrs = lambda wildcards, attempt: attempt
     params:
         min_sv_len = MIN_SV_LEN_CALL,
-        min_mapq = MIN_MAPQ,
+        min_mapq = lambda wildcards: load_min_mapq_threshold(wildcards)
     shell:
         'pbsv discover --hifi --region {wildcards.chrom} '
         '--min-mapq {params.min_mapq} '
@@ -334,5 +334,5 @@ if SAMPLE_PAIRS is not None:
                 ),
                 sample=HIFI_SAMPLES,
                 sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
-                ref=["prg"]
+                ref=["prg", "prg1", "prg2"]
             )

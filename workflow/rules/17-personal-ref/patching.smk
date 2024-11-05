@@ -86,16 +86,18 @@ rule decompress_prg_fasta_file:
     files ... just overhead ...
     """
     input:
-        fagz = rules.combine_consensus_haplotypes.output.fasta
+        fagz = load_prg_variant_fasta
     output:
         fasta = temp(DIR_PROC.joinpath(
             "temp", "prg_plain",
-            "{sample}_{read_type}_{ref}_{panel}.wg.fasta"
+            "{sample}_{read_type}_{ref}_{panel}.{prg_variant}.fasta"
         )),
         fai = temp(DIR_PROC.joinpath(
             "temp", "prg_plain",
-            "{sample}_{read_type}_{ref}_{panel}.wg.fasta.fai"
+            "{sample}_{read_type}_{ref}_{panel}.{prg_variant}.fasta.fai"
         ))
+    wildcard_constraints:
+        prg_variant="(prg|prg1|prg2)"
     conda:
         DIR_ENVS.joinpath("biotools.yaml")
     threads: CPU_LOW

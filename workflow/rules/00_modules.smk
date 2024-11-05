@@ -28,6 +28,7 @@ include: "25-coverage/aggregate.smk"
 
 include: "30-callshort/hifi.smk"
 
+include: "40-callsv/pyutils.smk"
 include: "40-callsv/hifi.smk"
 
 include: "45-callcnv/pyutils.smk"

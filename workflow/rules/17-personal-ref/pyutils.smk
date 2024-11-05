@@ -14,3 +14,27 @@ def load_recombination_map(wildcards):
     assert file_path.is_file()
 
     return file_path
+
+
+def load_prg_variant_fasta(wildcards):
+
+    assert hasattr(wildcards, "prg_variant")
+
+    if wildcards.prg_variant == "prg":
+        rules_file = rules.combine_consensus_haplotypes.output.fasta
+    elif wildcards.prg_variant == "prg1":
+        rules_file = expand(
+            rules.generate_consensus_sequence.output.fasta,
+            hap=1,
+            allow_missing=True
+        )
+    elif wildcards.prg_variant == "prg2":
+        rules_file = expand(
+            rules.combine_consensus_haplotypes.output.fasta,
+            hap=2,
+            allow_missing=True
+        )
+    else:
+        raise RuntimeError(f"Unknown PRG variant: {wildcards}")
+
+    return rules_file
