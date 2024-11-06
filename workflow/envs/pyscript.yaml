@@ -1,8 +1,9 @@
 name: pyscript
 dependencies:
-  - Python=3.8.*
+  - Python=3.10.*
   - pip
-  - pysam=0.21.*
+  - pysam=0.22.*
   - scipy=1.10.*
   - numpy=1.24.*
   - pandas=2.0.*
+  - xopen=2.0.*
