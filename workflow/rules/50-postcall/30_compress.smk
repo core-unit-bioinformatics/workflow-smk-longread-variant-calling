@@ -96,12 +96,72 @@ if SAMPLE_PAIRS is not None:
                 "--variant-reads {output.tsv} > {log}"
 
 
-        rule run_all_hifi_variant_reads:
+        rule merge_structural_variant_read_tables:
             input:
                 tsv = expand(
                     rules.extract_structural_variant_reads.output.tsv,
+                    ref=["prg", "prg1", "prg2"],
+                    allow_missing=True
+                )
+            output:
+                tsv = DIR_RES.joinpath(
+                    "variant_reads", "{sample}_hifi.mm2-sniffles.sv.merged-variant-reads.tsv.gz"
+                )
+            resources:
+                mem_mb=lambda wildcards, attempt: 2048 * attempt
+            run:
+                import pandas as pd
+
+                concat = []
+                for tsv in input.tsv:
+                    df = pd.read_csv(tsv, sep="\t", header=0, index_col=0)
+                    concat.append(df)
+
+                concat = pd.concat(concat, axis=1, ignore_index=False)
+                concat = concat.fillna(0, inplace=False).astype(int)
+                concat.sort_index(inplace=True)
+
+                concat.to_csv(output.tsv, sep="\t", header=True, index=True)
+            # END OF RUN BLOCK
+
+
+        rule dump_likely_case_reads:
+            input:
+                tsv = rules.merge_structural_variant_read_tables.output.tsv
+            output:
+                lst = DIR_RES.joinpath(
+                    "variant_reads", "case_specific",
+                    "{sample}_hifi.mm2-sniffles.sv.case-specific-reads.txt"
+                )
+            run:
+                import pandas as pd
+                df = pd.read_csv(input.tsv, sep="\t", header=0, index_col=0)
+
+                # reads that support a HOM case (~tumor or similar)
+                # variant in at least one haploid PRG and persist
+                # in the diploid PRG are assumed to be specific
+                # TODO - make column selection generic
+                hap_hom = ["PRG1_HOM", "PRG2_HOM"]
+                dip_hom = "PRG_HOM"
+
+                select_hap = (df[hap_hom] > 0).any(axis=1)
+                select_dip = (df[dip_hom] > 0)
+
+                selector = select_hap & select_dip
+
+                case_reads = df.loc[selector, :].copy()
+                case_read_names = sorted(df.index[selector].values)
+
+                with open(output.lst, "w") as dump:
+                    _ = dump.write("\n".join(case_read_names) + "\n")
+            # END OF RUN BLOCK
+
+
+        rule run_all_hifi_variant_reads:
+            input:
+                tsv = expand(
+                    rules.dump_likely_case_reads.output.lst,
                     sample=CASE_SAMPLES,
-                    ref=["prg", "prg1", "prg2"]
                 )
 
 
