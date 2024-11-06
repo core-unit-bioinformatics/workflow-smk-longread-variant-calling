@@ -30,7 +30,7 @@ def load_prg_variant_fasta(wildcards):
         )
     elif wildcards.prg_variant == "prg2":
         rules_file = expand(
-            rules.combine_consensus_haplotypes.output.fasta,
+            rules.generate_consensus_sequence.output.fasta,
             hap=2,
             allow_missing=True
         )
