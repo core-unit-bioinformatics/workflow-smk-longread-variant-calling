@@ -23,10 +23,16 @@ rule merge_alignments_per_sample:
             path_id=MAP_SAMPLE_TO_INPUT_FILES[wildcards.sample][wildcards.read_type]["path_ids"]
         ),
     output:
-        bam = DIR_PROC.joinpath(
-            "20-postalign", "merge", "{sample}_{read_type}.{aligner}.{ref}.sort.bam"),
-        bai = DIR_PROC.joinpath(
-            "20-postalign", "merge", "{sample}_{read_type}.{aligner}.{ref}.sort.bam.bai"),
+        bam = temp(
+            DIR_PROC.joinpath(
+                "20-postalign", "merge", "{sample}_{read_type}.{aligner}.{ref}.sort.bam"
+            )
+        ),
+        bai = temp(
+            DIR_PROC.joinpath(
+                "20-postalign", "merge", "{sample}_{read_type}.{aligner}.{ref}.sort.bam.bai"
+            )
+        ),
     benchmark:
         DIR_RSRC.joinpath(
             "20-postalign", "merge", "{sample}_{read_type}.{aligner}.{ref}.sort.samtools-merge.rsrc",
