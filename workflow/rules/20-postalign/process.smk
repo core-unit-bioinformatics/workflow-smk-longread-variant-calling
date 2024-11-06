@@ -191,20 +191,20 @@ if SAMPLE_PAIRS is not None:
             bams_main = expand(
                 rules.split_merged_alignments.output.main,
                 read_type=["hifi"],
-                ref=["prg"],
+                ref=["prg", "prg1", "prg2"],
                 sample=HIFI_SAMPLES,
                 aligner=HIFI_ALIGNER_WILDCARDS
             ),
             bams_aux = expand(
                 rules.split_merged_alignments.output.aux,
                 read_type=["hifi"],
-                ref=["prg"],
+                ref=["prg", "prg1", "prg2"],
                 sample=HIFI_SAMPLES,
                 aligner=HIFI_ALIGNER_WILDCARDS
             ),
             flagstats = expand(
                 rules.compute_alignment_flagstats.output.stats,
-                ref=["prg"],
+                ref=["prg", "prg1", "prg2"],
                 sample=HIFI_SAMPLES,
                 read_type=["hifi"],
                 aligner=HIFI_ALIGNER_WILDCARDS,
@@ -212,7 +212,7 @@ if SAMPLE_PAIRS is not None:
             ),
             bamstats = expand(
                 rules.compute_alignment_stats.output.stats,
-                ref=["prg"],
+                ref=["prg", "prg1", "prg2"],
                 sample=HIFI_SAMPLES,
                 read_type=["hifi"],
                 aligner=HIFI_ALIGNER_WILDCARDS,
