@@ -42,6 +42,7 @@ include: "50-postcall/50_stats.smk"
 include: "70-plotting/read_depth.smk"
 
 include: "80-subset/alignments.smk"
+include: "80-subset/callset.smk"
 
 include: "99-outputs/align.smk"
 include: "99-outputs/coverage.smk"

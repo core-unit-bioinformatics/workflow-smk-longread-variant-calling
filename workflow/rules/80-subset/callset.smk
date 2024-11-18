@@ -1,0 +1,110 @@
+
+"""
+This module will only be executed if a code path
+leading to a personalized reference genome was
+executed. That is, the output of the rule
+rules::50-postcall::30_compress::dump_likely_case_reads
+exists
+"""
+
+if SAMPLE_PAIRS is not None:
+
+    rule create_subset_callset_by_case_reads:
+        input:
+            read_ids = rules.dump_likely_case_reads.output.lst,
+            callset = DIR_PROC.joinpath(
+                "40-callsv", "{sample}_hifi.mm2-sniffles.{ref}.vcf"
+            )
+        output:
+            vcf = DIR_PROC.joinpath(
+                "80-subset", "case_specific_callset",
+                "{sample}_hifi.mm2-sniffles.{ref}.case-read-filt.vcf"
+            ),
+            summary = DIR_PROC.joinpath(
+                "80-subset", "case_specific_callset",
+                "{sample}_hifi.mm2-sniffles.{ref}.case-read-filt.summary.txt"
+            )
+        resources:
+            mem_mb=lambda wildcards, attempt: 4096 * attempt,
+            time_hrs=lambda wildcards, attempt: attempt * attempt
+        run:
+            import io
+            case_reads = set(open(input.read_ids).read().strip().split())
+
+            VCF_INFO_COLUMN_INDEX = 6
+
+            out_buffer = io.StringIO()
+            total_calls = 0
+            selected_calls = 0
+            selected_support = []
+            skipped_support = []
+            with open(input.callset, "r") as vcf:
+                for line in vcf:
+                    if line.startswith("#"):
+                        out_buffer.write(line)
+                        continue
+                    info_column = line.split()[VCF_INFO_COLUMN_INDEX]
+                    for entry in info_column.split(";"):
+                        if not entry.startswith("RNAMES"):
+                            continue
+                        total_calls += 1
+                        read_names = set(entry.strip("RNAMES=").split(","))
+                        total_reads = len(read_names)
+                        support_reads = len(read_names.intersection(case_reads))
+                        if support_reads > 0:
+                            pct_case_support = round(support_reads/total_reads * 100, 2)
+                            if pct_case_support > 50:
+                                selected_calls += 1
+                                out_buffer.write(line)
+                                selected_support.append(pct_case_support)
+                            else:
+                                skipped_support.append(pct_case_support)
+                        break
+
+            with open(output.vcf, "w") as dump:
+                _ = dump.write(out_buffer.getvalue())
+
+            selected_pct = round(selected_calls/total_calls * 100, 4)
+            with open(output.summary, "w") as dump:
+                _ = dump.write(f"total_calls\t{total_calls}\n")
+                _ = dump.write(f"selected_calls\t{selected_calls}\n")
+                _ = dump.write(f"selected_pct\t{selected_pct}\n")
+                for value in selected_support:
+                    _ = dump.write(f"selected_support\t{value}\n")
+                for value in skipped_support:
+                    _ = dump.write(f"skipped_support\t{value}\n")
+        # END OF RUN BLOCK
+
+
+    rule compress_index_sv_case_read_callset:
+        """TODO
+        this is a quasi-duplicate of the same
+        rule in rules::50-postcall::30_compress.smk
+        """
+        input:
+            vcf = rules.create_subset_callset_by_case_reads.output.vcf
+        output:
+            vcf = DIR_RES.joinpath(
+                "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz"
+            ),
+            tbi = DIR_RES.joinpath(
+                "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.tbi"
+            )
+        conda:
+            DIR_ENVS.joinpath("biotools.yaml")
+        params:
+            acc_out = lambda wildcards, output: register_result(output)
+        shell:
+            "bgzip --keep --stdout --compress-level 9 "
+            "{input.vcf} > {output.vcf}"
+                " && "
+            "bcftools tabix -p vcf -f {output.vcf}"
+
+
+    rule run_all_subset_callsets_case_reads:
+        input:
+            vcf = expand(
+                rules.compress_index_sv_case_read_callset.output.vcf,
+                sample=CASE_SAMPLES,
+                ref=USE_REF_GENOMES
+            )
