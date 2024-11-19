@@ -90,7 +90,7 @@ if SAMPLE_PAIRS is not None:
                 "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz"
             ),
             tbi = DIR_RES.joinpath(
-                "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.tbi"
+                "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz.tbi"
             )
         conda:
             DIR_ENVS.joinpath("biotools.yaml")
