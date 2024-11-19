@@ -31,7 +31,7 @@ if SAMPLE_PAIRS is not None:
             import io
             case_reads = set(open(input.read_ids).read().strip().split())
 
-            VCF_INFO_COLUMN_INDEX = 6
+            VCF_INFO_COLUMN_INDEX = 7
 
             out_buffer = io.StringIO()
             total_calls = 0
@@ -44,6 +44,8 @@ if SAMPLE_PAIRS is not None:
                         out_buffer.write(line)
                         continue
                     info_column = line.split()[VCF_INFO_COLUMN_INDEX]
+                    # that is likely sniffles specific --- how to make this config param?
+                    assert "RNAMES" in line
                     for entry in info_column.split(";"):
                         if not entry.startswith("RNAMES"):
                             continue
