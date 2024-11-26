@@ -4,6 +4,9 @@ SAMPLES = None
 # TODO - for future update
 SAMPLE_SEX = None
 
+COHORT_SAMPLES = None
+BASELINE_SAMPLES = None
+
 HIFI_SAMPLES = []
 ONT_SAMPLES = []
 HIFI_INPUT = []
@@ -35,11 +38,32 @@ def process_sample_sheet():
     # may be used in future updates for DeepVariant as well
     global SAMPLE_SEX
     SAMPLE_SEX = dict()
+
+    global COHORT_SAMPLES
+    COHORT_SAMPLES = set()
+    global BASELINE_SAMPLES
+    BASELINE_SAMPLES = set()
+
     for row in SAMPLE_SHEET.itertuples():
         if hasattr(row, "sex"):
             SAMPLE_SEX[row.sample] = row.sex
         else:
             SAMPLE_SEX[row.sample] = "any"
+
+        # TODO fix via sample sheet normalizing script
+        if hasattr(row, "sample_type"):
+            sample_type = row.sample_type
+        elif hasattr(row, "sampletype"):
+            sample_type = row.sampletype
+        else:
+            sample_type = "cohort"
+
+        if sample_type == "baseline":
+            BASELINE_SAMPLES.add(row.sample)
+        else:
+            COHORT_SAMPLES.add(row.sample)
+
+    assert len(COHORT_SAMPLES.intersection(BASELINE_SAMPLES)) == 0
 
     global MAP_SAMPLE_TO_INPUT_FILES
     MAP_SAMPLE_TO_INPUT_FILES = sample_input

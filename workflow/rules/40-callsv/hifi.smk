@@ -1,18 +1,5 @@
 
 rule sv_call_sniffles_hifi:
-    """TODO check
-    based on this statement
-    https://github.com/fritzsedlazeck/Sniffles/issues/123#issuecomment-460705150
-    the "-s" parameter determines
-    the read support threshold for a call;
-    Since there is no "-s" parameter in current version,
-    that probably refers to the parameter
-    "--minsupport [default: auto]"
-    Check if that makes a difference
-
-    2024-02-29 added parameter --minsupport for rerun;
-    remove again if number of calls drops substantially
-    """
     input:
         bam = expand(
             rules.split_merged_alignments.output.main,
@@ -61,6 +48,51 @@ rule sv_call_sniffles_hifi:
         "--reference {input.ref} "
         "--input {input.bam} "
         "--snf {output.snf} "
+        "--vcf {output.vcf} &> {log}"
+
+
+rule sv_call_sniffles_hifi_all_samples:
+    input:
+        snf = expand(
+            rules.sv_call_sniffles_hifi,
+            sample=HIFI_SAMPLES,
+            read_type="hifi",
+            allow_missing=True
+        ),
+        ref = lambda wildcards: load_reference_genome(wildcards),
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
+        # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+    output:
+        vcf = DIR_PROC.joinpath(
+            "40-callsv", "SAMPLES_hifi.{aligner}-sniffles.{ref}.vcf"
+        )
+    log:
+        DIR_LOG.joinpath("40-callsv", "SAMPLES_hifi.{aligner}-sniffles.{ref}.log")
+    benchmark:
+        DIR_RSRC.joinpath("40-callsv", "SAMPLES_hifi.{aligner}-sniffles.{ref}.rsrc")
+    conda:
+        DIR_ENVS.joinpath("caller", "sniffles.yaml")
+    threads: CPU_MEDIUM
+    resources:
+        mem_mb=lambda wildcards, attempt: 32768 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt**3,
+    params:
+        min_sv_len = MIN_SV_LEN_CALL,
+        min_mapq = lambda wildcards: load_min_mapq_threshold(wildcards),
+        min_cov = MIN_COV,
+        min_aln_len = MIN_ALN_LEN
+    shell:
+        "sniffles --threads {threads} --no-progress --allow-overwrite "
+        "--output-rnames "
+        "--minsvlen {params.min_sv_len} "
+        "--minsupport {params.min_cov} "
+        "--combine-null-min-coverage {params.min_cov} "
+        "--qc-coverage {params.min_cov} "
+        "--mapq {params.min_mapq} "
+        "--min-alignment-length {params.min_aln_len} "
+        "--reference {input.ref} "
+        "--input {input.snf} "
         "--vcf {output.vcf} &> {log}"
 
 
@@ -265,6 +297,41 @@ rule sv_call_pbsv_hifi:
         '{input.ref} {input.svsig} {output.vcf} &> {log}'
 
 
+rule sv_call_pbsv_hifi_all_samples:
+    """A multisample callset can only work with a common genomic
+    reference. Hence, loaded chromosomes can be reference chromosomes
+    """
+    input:
+        ref = lambda wildcards: load_reference_genome(wildcards, plain=True),
+        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True, plain=True),
+        svsig = expand(
+            rules.sv_discover_pbsv_hifi.output.svsig,
+            sample=HIFI_SAMPLES,
+            chrom=CHROMOSOMES,
+        )
+    output:
+        vcf = DIR_PROC.joinpath("40-callsv", "SAMPLES_hifi.{aligner}-pbsv.{ref}.vcf"),
+    log:
+        DIR_LOG.joinpath("40-callsv", "SAMPLES_hifi.{aligner}-pbsv.{ref}.call.log"),
+    benchmark:
+        DIR_RSRC.joinpath("40-callsv", "SAMPLES_hifi.{aligner}-pbsv.{ref}.call.rsrc"),
+    wildcard_constraints:
+        aligner=CONSTRAINT_HIFI_ALIGNER,
+        ref=CONSTRAINT_REF_GENOMES
+    conda:
+        DIR_ENVS.joinpath("caller", "pbsv.yaml")
+    threads: CPU_MEDIUM
+    resources:
+        mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt
+    params:
+        min_sv_len = MIN_SV_LEN_CALL,
+    shell:
+        'pbsv call -j {threads} --hifi '
+        '--min-sv-length {params.min_sv_len} '
+        '{input.ref} {input.svsig} {output.vcf} &> {log}'
+
+
 rule run_pbsv_hifi_sv_calling:
     input:
         vcf = expand(
@@ -335,4 +402,24 @@ if SAMPLE_PAIRS is not None:
                 sample=HIFI_SAMPLES,
                 sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
                 ref=["prg", "prg1", "prg2"]
+            )
+
+
+if RUN_SNIFFLES_MULTISAMPLE_MODE:
+    rule run_sniffles_hifi_sv_calling_multisample:
+        input:
+            vcf = expand(
+                rules.sv_call_sniffles_hifi_all_samples.output.vcf,
+                ref=USE_REF_GENOMES,
+                aligner=ALIGNER_FOR_CALLER[("sniffles", "hifi")]
+            )
+
+
+if RUN_PBSV_MULITSAMPLE_MODE:
+    rule run_pbsv_hifi_sv_calling_multisample:
+        input:
+            vcf = expand(
+                rules.sv_call_pbsv_hifi_all_samples.output.vcf,
+                ref=USE_REF_GENOMES,
+                aligner=ALIGNER_FOR_CALLER[("pbsv", "hifi")]
             )
