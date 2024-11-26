@@ -307,6 +307,7 @@ rule sv_call_pbsv_hifi_all_samples:
             rules.sv_discover_pbsv_hifi.output.svsig,
             sample=HIFI_SAMPLES,
             chrom=CHROMOSOMES,
+            allow_missing
         )
     output:
         vcf = DIR_PROC.joinpath("40-callsv", "SAMPLES_hifi.{aligner}-pbsv.{ref}.vcf"),
