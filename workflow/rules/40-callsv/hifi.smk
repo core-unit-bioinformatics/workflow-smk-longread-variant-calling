@@ -415,7 +415,7 @@ if RUN_SNIFFLES_MULTISAMPLE_MODE:
             )
 
 
-if RUN_PBSV_MULITSAMPLE_MODE:
+if RUN_PBSV_MULTISAMPLE_MODE:
     rule run_pbsv_hifi_sv_calling_multisample:
         input:
             vcf = expand(
