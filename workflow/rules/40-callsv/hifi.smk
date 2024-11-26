@@ -54,9 +54,8 @@ rule sv_call_sniffles_hifi:
 rule sv_call_sniffles_hifi_all_samples:
     input:
         snf = expand(
-            rules.sv_call_sniffles_hifi,
+            rules.sv_call_sniffles_hifi.output.snf,
             sample=HIFI_SAMPLES,
-            read_type="hifi",
             allow_missing=True
         ),
         ref = lambda wildcards: load_reference_genome(wildcards),
