@@ -108,7 +108,7 @@ split_short_calls:
 # that threshold to produce some
 # overlap with the short variant
 # callers (in bp)
-minimum_sv_length_call: 35
+minimum_sv_length_call: 50
 
 # ignore alignments with MAPQ
 # below this threshold
