@@ -1,4 +1,4 @@
 name: sniffles2
 dependencies:
-  - sniffles=2.2
-  - bcftools=1.16
+  - sniffles=2.5.2
+  - bcftools=1.21
