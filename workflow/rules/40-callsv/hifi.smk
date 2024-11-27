@@ -320,10 +320,10 @@ rule sv_call_pbsv_hifi_all_samples:
         ref=CONSTRAINT_REF_GENOMES
     conda:
         DIR_ENVS.joinpath("caller", "pbsv.yaml")
-    threads: CPU_MEDIUM
+    threads: CPU_HIGH
     resources:
         mem_mb = lambda wildcards, attempt: 49152 * attempt,
-        time_hrs = lambda wildcards, attempt: attempt
+        time_hrs = lambda wildcards, attempt: attempt * 11
     params:
         min_sv_len = MIN_SV_LEN_CALL,
     shell:
