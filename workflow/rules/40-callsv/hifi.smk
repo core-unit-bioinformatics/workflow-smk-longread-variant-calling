@@ -248,7 +248,7 @@ rule sv_discover_pbsv_hifi:
     conda:
         DIR_ENVS.joinpath("caller", "pbsv.yaml")
     resources:
-        mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt * attempt,
+        mem_mb = lambda wildcards, attempt: 2048 + 4096 * attempt * attempt,
         time_hrs = lambda wildcards, attempt: attempt
     params:
         min_sv_len = MIN_SV_LEN_CALL,
@@ -322,7 +322,7 @@ rule sv_call_pbsv_hifi_all_samples:
         DIR_ENVS.joinpath("caller", "pbsv.yaml")
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
+        mem_mb = lambda wildcards, attempt: 49152 * attempt,
         time_hrs = lambda wildcards, attempt: attempt
     params:
         min_sv_len = MIN_SV_LEN_CALL,
