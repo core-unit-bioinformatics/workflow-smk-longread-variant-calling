@@ -119,16 +119,16 @@ if CASE_GROUPS:
             multisample_vcf = DIR_PROC.joinpath("40-callsv", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.vcf"),
         output:
             vcf = DIR_RES.joinpath(
-                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.vcf.gz"
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.case-{case_group}.vcf.gz"
             ),
             tbi = DIR_RES.joinpath(
-                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.vcf.gz.tbi"
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.case-{case_group}.vcf.gz.tbi"
             ),
             sample_matrix = DIR_RES.joinpath(
-                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.sample-matrix.tsv.gz"
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.case-{case_group}.sample-matrix.tsv.gz"
             ),
             stats = DIR_RES.joinpath(
-                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.support-stats.tsv.gz"
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.case-{case_group}.support-stats.tsv.gz"
             )
         conda:
             DIR_ENVS.joinpath("pyscript.yaml")

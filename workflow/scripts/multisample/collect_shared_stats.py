@@ -114,7 +114,7 @@ def get_genotype_info(sample_genotype):
     return gt
 
 
-def get_sniffles_support_vector(info_column):
+def get_sniffles_support_vector(info_column, sample_columns):
 
     info_fields = info_column.split(";")
     # should always be last
@@ -129,6 +129,12 @@ def get_sniffles_support_vector(info_column):
             break
     assert supp_vec is not None
     supp_vec = list(map(lambda s: bool(int(s)), supp_vec))
+    return supp_vec
+
+
+def build_pbsv_support_vector(info_column, sample_columns):
+
+    supp_vec = [True if "1" in gt else False for gt in map(get_genotype_info, sample_columns)]
     return supp_vec
 
 
@@ -155,7 +161,7 @@ def check_unknown_samples(case_samples, baseline_samples, vcf_samples):
     return
 
 
-def process_sniffles_callset(case_samples, baseline_samples, keep_singletons, forward):
+def process_callset(caller, case_samples, baseline_samples, keep_singletons, forward):
 
     samples = None
 
@@ -174,6 +180,11 @@ def process_sniffles_callset(case_samples, baseline_samples, keep_singletons, fo
     # on command line arguments
     check_case = case_samples is not None
     check_baseline = baseline_samples is not None
+
+    get_support_vector = {
+        "sniffles": get_sniffles_support_vector,
+        "pbsv": build_pbsv_support_vector
+    }[caller]
 
     if check_case and check_baseline:
         case_or_base = fnt.partial(is_case_or_baseline_sample, case_samples, baseline_samples)
@@ -199,7 +210,9 @@ def process_sniffles_callset(case_samples, baseline_samples, keep_singletons, fo
             continue
 
         vcf_columns = vcf_line.strip().split()
-        supp_vec = get_sniffles_support_vector(vcf_columns[VCF_INFO_COLUMN_INDEX])
+
+        supp_vec = get_support_vector(vcf_columns[VCF_INFO_COLUMN_INDEX], vcf_columns[VCF_SAMPLE_COLUMN_FIRST:])
+        assert any(supp_vec)
         shared_samples = tuple(
             [sample for support, sample in zip(supp_vec, samples) if support]
         )
@@ -269,13 +282,11 @@ def main():
         setattr(args, "include_singletons", True)
     baseline_samples = load_sample_lists(args.baseline_samples)
 
-    if args.caller == "sniffles":
-        shared_support, optional_stats, vcf_samples = process_sniffles_callset(
-            case_samples, baseline_samples,
-            args.include_singletons, args.vcf_subset
-        )
-    else:
-        raise RuntimeError
+    shared_support, optional_stats, vcf_samples = process_callset(
+        args.caller,
+        case_samples, baseline_samples,
+        args.include_singletons, args.vcf_subset
+    )
 
     if args.stats_out is not None:
         args.stats_out.parent.mkdir(exist_ok=True, parents=True)
