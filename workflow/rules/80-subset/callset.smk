@@ -131,8 +131,8 @@ if CASE_GROUPS:
             DIR_ENVS.joinpath("pyscript.yaml")
         params:
             script=find_script("collect_shared_stats"),
-            baseline_samples = lambda wildcards: load_sample_groups("baseline"),
-            case_samples = lambda wildcards: load_sample_groups(wildcards.case_group)
+            baseline_samples = lambda wildcards: get_sample_group_list("baseline"),
+            case_samples = lambda wildcards: get_sample_group_list(wildcards.case_group)
         resources:
             mem_mb=lambda wildcards, attempt: 8192 * attempt,
             time_hrs=lambda wildcards, attempt: attempt

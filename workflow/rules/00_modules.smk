@@ -34,7 +34,6 @@ include: "40-callsv/hifi.smk"
 include: "45-callcnv/pyutils.smk"
 include: "45-callcnv/hifi.smk"
 
-include: "50-postcall/pyutils.smk"
 include: "50-postcall/10_split.smk"
 include: "50-postcall/20_concat.smk"
 include: "50-postcall/30_compress.smk"
@@ -42,6 +41,7 @@ include: "50-postcall/50_stats.smk"
 
 include: "70-plotting/read_depth.smk"
 
+include: "80-subset/pyutils.smk"
 include: "80-subset/alignments.smk"
 include: "80-subset/callset.smk"
 

@@ -4,7 +4,7 @@ def get_sample_group_list(group_spec, add_cli_switch=True):
     if group_spec == "baseline":
         if not BASELINE_SAMPLES:
             warn_msg = (
-                "rules::50-postcall::pyutils::load_sample_groups\n"
+                "rules::80-subset::pyutils::load_sample_groups\n"
                 "WARNING: sample group BASELINE requested, but set is empty"
             )
             logerr(warn_msg)
@@ -29,7 +29,7 @@ def get_sample_group_list(group_spec, add_cli_switch=True):
         # may indeed be empty
         if not CONTROL_SAMPLES:
             warn_msg = (
-                "rules::50-postcall::pyutils::load_sample_groups\n"
+                "rules::80-subset::pyutils::load_sample_groups\n"
                 "WARNING: sample group CONTROL requested, but set is empty"
             )
             logerr(warn_msg)
@@ -48,7 +48,7 @@ def get_sample_group_list(group_spec, add_cli_switch=True):
             sample_group = sorted(group_samples)
     else:
         err_msg = (
-            "rules::50-postcall::pyutils::load_sample_groups\n"
+            "rules::80-subset::pyutils::load_sample_groups\n"
             f"ERROR: unknown sample group requested: {group_spec}"
         )
         raise ValueError(err_msg)
