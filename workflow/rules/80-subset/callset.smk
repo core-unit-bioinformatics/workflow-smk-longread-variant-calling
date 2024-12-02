@@ -143,7 +143,7 @@ if CASE_GROUPS:
         shell:
             "cat {input.multisample_vcf}"
                 " | "
-            "{params.script} --calling-algortihm {params.caller} "
+            "{params.script} --calling-algorithm {params.caller} "
             "{params.baseline_samples} {params.case_samples} "
             "--sample-matrix {output.sample_matrix} --stats-out {output.stats} "
             "--vcf-subset"
