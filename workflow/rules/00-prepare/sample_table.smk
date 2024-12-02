@@ -6,6 +6,8 @@ SAMPLE_SEX = None
 
 COHORT_SAMPLES = None
 BASELINE_SAMPLES = None
+CASE_GROUPS = None
+CONTROL_SAMPLES = None
 
 HIFI_SAMPLES = []
 ONT_SAMPLES = []
@@ -43,6 +45,10 @@ def process_sample_sheet():
     COHORT_SAMPLES = set()
     global BASELINE_SAMPLES
     BASELINE_SAMPLES = set()
+    global CASE_GROUPS
+    CASE_GROUPS = collections.defaultdict(set)
+    global CONTROL_SAMPLES
+    CONTROL_SAMPLES = set()
 
     for row in SAMPLE_SHEET.itertuples():
         if hasattr(row, "sex"):
@@ -53,8 +59,6 @@ def process_sample_sheet():
         # TODO fix via sample sheet normalizing script
         if hasattr(row, "sample_type"):
             sample_type = row.sample_type
-        elif hasattr(row, "sampletype"):
-            sample_type = row.sampletype
         else:
             sample_type = "cohort"
 
@@ -62,6 +66,20 @@ def process_sample_sheet():
             BASELINE_SAMPLES.add(row.sample)
         else:
             COHORT_SAMPLES.add(row.sample)
+
+        if hasattr(row, "sample_group"):
+            sample_group = row.sample_group
+            if sample_group == "control":
+                CONTROL_SAMPLES.add(row.sample)
+            elif sample_group == "baseline":
+                BASELINE_SAMPLES.add(row.sample)
+            elif sample_group == "case":
+                CASE_GROUPS["all"].add(row.sample)
+                if hasattr(row, "group_label"):
+                    group_label = row.group_label
+                    CASE_GROUPS[group_label].add(row.sample)
+            else:
+                raise ValueError(f"Unknown sample group value: {row}")
 
     assert len(COHORT_SAMPLES.intersection(BASELINE_SAMPLES)) == 0
 

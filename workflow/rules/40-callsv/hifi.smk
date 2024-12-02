@@ -299,6 +299,9 @@ rule sv_call_pbsv_hifi:
 rule sv_call_pbsv_hifi_all_samples:
     """A multisample callset can only work with a common genomic
     reference. Hence, loaded chromosomes can be reference chromosomes
+
+    # TODO this takes extremely long --- split first by chromosome,
+    merge in subsequent step.
     """
     input:
         ref = lambda wildcards: load_reference_genome(wildcards, plain=True),

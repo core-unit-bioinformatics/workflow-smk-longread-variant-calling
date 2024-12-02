@@ -87,10 +87,10 @@ if SAMPLE_PAIRS is not None:
             vcf = rules.create_subset_callset_by_case_reads.output.vcf
         output:
             vcf = DIR_RES.joinpath(
-                "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz"
+                "callsets", "prg_derived", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz"
             ),
             tbi = DIR_RES.joinpath(
-                "callsets", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz.tbi"
+                "callsets", "prg_derived", "{sample}_hifi.mm2-sniffles.{ref}.sv.case-read-filt.vcf.gz.tbi"
             )
         conda:
             DIR_ENVS.joinpath("biotools.yaml")
@@ -109,4 +109,51 @@ if SAMPLE_PAIRS is not None:
                 rules.compress_index_sv_case_read_callset.output.vcf,
                 sample=CASE_SAMPLES,
                 ref=USE_REF_GENOMES
+            )
+
+
+if CASE_GROUPS:
+
+    rule split_multisample_sv_into_case_callsets:
+        input:
+            multisample_vcf = DIR_PROC.joinpath("40-callsv", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.vcf"),
+        output:
+            vcf = DIR_RES.joinpath(
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.vcf.gz"
+            ),
+            tbi = DIR_RES.joinpath(
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.vcf.gz.tbi"
+            ),
+            tsv = DIR_RES.joinpath(
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.sample-matrix.tsv"
+            )
+        conda:
+            DIR_ENVS.joinpath("pyscript.yaml")
+        params:
+            script=find_script("collect_shared_stats"),
+            baseline_samples = lambda wildcards: load_sample_groups("baseline"),
+            case_samples = lambda wildcards: load_sample_groups(wildcards.case_group)
+        resources:
+            mem_mb=lambda wildcards, attempt: 8192 * attempt,
+            time_hrs=lambda wildcards, attempt: attempt
+        shell:
+            "cat {input.multisample_vcf}"
+                " | "
+            "{params.script} --calling-algortihm {wildcards.caller} "
+            "{params.baseline_samples} {params.case_samples} "
+            "--vcf-subset"
+                " | "
+            "bgzip --keep --stdout --compress-level 9 > {output.vcf}"
+                " && "
+            "bcftools tabix -p vcf -f {output.vcf}"
+
+
+    rule run_all_subset_sv_case_callsets:
+        input:
+            vcf = expand(
+                rules.split_multisample_sv_into_case_callsets.output.vcf,
+                read_type=["hifi"],
+                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                ref=USE_REF_GENOMES,
+                case_group=sorted(CASE_GROUPS.keys())
             )
