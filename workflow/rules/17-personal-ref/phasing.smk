@@ -95,7 +95,7 @@ rule phase_samples_by_chrom:
         DIR_ENVS.joinpath("phasing.yaml")
     threads: CPU_HIGH
     resources:
-        mem_mb=lambda wildcards, attempt: 4096 * attempt,
+        mem_mb=lambda wildcards, attempt: 16384 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     params:
         haploids=lambda wildcards, input: f"--haploids {input.male_samples}" if wildcards.chrom in ["chrX", "chrY"] else "",
