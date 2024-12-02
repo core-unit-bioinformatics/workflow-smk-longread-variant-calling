@@ -132,14 +132,15 @@ if CASE_GROUPS:
         params:
             script=find_script("collect_shared_stats"),
             baseline_samples = lambda wildcards: get_sample_group_list("baseline"),
-            case_samples = lambda wildcards: get_sample_group_list(wildcards.case_group)
+            case_samples = lambda wildcards: get_sample_group_list(wildcards.case_group),
+            caller=lambda wildcards: wildcards.sv_calling_toolchain.split("-")[-1].strip()
         resources:
             mem_mb=lambda wildcards, attempt: 8192 * attempt,
             time_hrs=lambda wildcards, attempt: attempt
         shell:
             "cat {input.multisample_vcf}"
                 " | "
-            "{params.script} --calling-algortihm {wildcards.caller} "
+            "{params.script} --calling-algortihm {params.caller} "
             "{params.baseline_samples} {params.case_samples} "
             "--vcf-subset"
                 " | "
