@@ -124,8 +124,11 @@ if CASE_GROUPS:
             tbi = DIR_RES.joinpath(
                 "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.vcf.gz.tbi"
             ),
-            tsv = DIR_RES.joinpath(
-                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.sample-matrix.tsv"
+            sample_matrix = DIR_RES.joinpath(
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.sample-matrix.tsv.gz"
+            ),
+            stats = DIR_RES.joinpath(
+                "callsets", "subsets", "SAMPLES_{read_type}.{sv_calling_toolchain}.{ref}.sv.{case_group}.support-stats.tsv.gz"
             )
         conda:
             DIR_ENVS.joinpath("pyscript.yaml")
@@ -135,13 +138,14 @@ if CASE_GROUPS:
             case_samples = lambda wildcards: get_sample_group_list(wildcards.case_group),
             caller=lambda wildcards: wildcards.sv_calling_toolchain.split("-")[-1].strip()
         resources:
-            mem_mb=lambda wildcards, attempt: 8192 * attempt,
+            mem_mb=lambda wildcards, attempt: 4096 * attempt,
             time_hrs=lambda wildcards, attempt: attempt
         shell:
             "cat {input.multisample_vcf}"
                 " | "
             "{params.script} --calling-algortihm {params.caller} "
             "{params.baseline_samples} {params.case_samples} "
+            "--sample-matrix {output.sample_matrix} --stats-out {output.stats} "
             "--vcf-subset"
                 " | "
             "bgzip --keep --stdout --compress-level 9 > {output.vcf}"

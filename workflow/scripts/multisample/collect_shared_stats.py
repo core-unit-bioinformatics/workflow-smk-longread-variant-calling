@@ -10,6 +10,7 @@ import sys
 
 import pandas as pd
 import numpy as np
+import xopen
 
 
 VCF_INFO_COLUMN_INDEX = 7
@@ -56,6 +57,20 @@ def parse_command_line():
         action="store_true",
         default=False,
         dest="vcf_subset"
+    )
+
+    parser.add_argument(
+        "--sample-matrix", "-m",
+        type=lambda x: pl.Path(x).resolve(),
+        default=None,
+        dest="sample_matrix"
+    )
+
+    parser.add_argument(
+        "--stats-out", "-o",
+        type=lambda x: pl.Path(x).resolve(),
+        dest="stats_out",
+        default=None
     )
 
     args = parser.parse_args()
@@ -232,6 +247,7 @@ def build_sample_matrix(shared_support, samples):
         index=sorted(samples),
         columns=sorted(samples)
     )
+    counts.index.name = "sample"
 
     for sample_set, count in shared_support.items():
         if len(sample_set) == 1:
@@ -241,9 +257,7 @@ def build_sample_matrix(shared_support, samples):
             counts.loc[a, b] += count
             counts.loc[b, a] += count
 
-    print(counts)
-
-    return
+    return counts
 
 
 def main():
@@ -260,9 +274,27 @@ def main():
             case_samples, baseline_samples,
             args.include_singletons, args.vcf_subset
         )
-        print(optional_stats)
+    else:
+        raise RuntimeError
 
-    #_ = build_sample_matrix(shared_support, vcf_samples)
+    if args.stats_out is not None:
+        args.stats_out.parent.mkdir(exist_ok=True, parents=True)
+        with xopen.xopen(args.stats_out, "w") as stats_dump:
+            if optional_stats:
+                for k, v in optional_stats.items():
+                    _ = stats_dump.write(f"{k}\t{v}\n")
+
+            for sample_set, shared_count in shared_support.most_common():
+                merged_samples = ",".join(sample_set)
+                _ = stats_dump.write(f"{merged_samples}\t{shared_count}\n")
+
+    if args.sample_matrix is not None:
+        args.sample_matrix.parent.mkdir(exist_ok=True, parents=True)
+        sm = build_sample_matrix(shared_support, vcf_samples)
+
+        sm.to_csv(args.sample_matrix, index=True, header=True, sep="\t")
+
+    return 0
 
 
 if __name__ == "__main__":
