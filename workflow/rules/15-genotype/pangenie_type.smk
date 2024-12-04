@@ -91,7 +91,7 @@ rule compress_index_pangenie_vcf:
         mem_mb=lambda wildcards, attempt: 8192 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     params:
-        script=find_script("fix_haploid_genotype"),
+        script=find_script("fix_haploid_genotypes"),
         male_opt=lambda wildcards: "--is-male" if SAMPLE_SEX[wildcards.sample] == "male" else ""
     shell:
         "cat {input.vcf}"
