@@ -90,8 +90,15 @@ rule compress_index_pangenie_vcf:
     resources:
         mem_mb=lambda wildcards, attempt: 8192 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
+    params:
+        script=find_script("fix_haploid_genotype"),
+        male_opt=lambda wildcards: "--is-male" if SAMPLE_SEX[wildcards.sample] == "male" else ""
     shell:
-        "bcftools view --threads {threads} --output-type z9 --output {output.vcf} {input.vcf}"
+        "cat {input.vcf}"
+            " | "
+        "{params.script} {params.male_opt}"
+            " | "
+        "bcftools view --threads {threads} --output-type z9 --output {output.vcf} /dev/stdin"
             " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 

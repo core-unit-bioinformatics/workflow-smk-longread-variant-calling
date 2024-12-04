@@ -94,7 +94,10 @@ def main():
     # for reference - VCF header
     # [0]CHROM  POS     ID      REF     ALT     QUAL    FILTER  [7]INFO    [8]FORMAT  [9]SAMPLE
 
-    match_chrom = re.compile("^chr[0-9]+")
+    # 2024-12-04 following discussion w/ Jana: presumably, genotyping on chrX should
+    # also lead to acceptable results for male samples, hence extend below regexp
+    # to include X
+    match_chrom = re.compile("^chr[0-9X]+")
 
     ref_id = args.ref_id.upper()
     gt_mapping = {

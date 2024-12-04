@@ -137,17 +137,26 @@ if SAMPLE_PAIRS is not None:
                 import pandas as pd
                 df = pd.read_csv(input.tsv, sep="\t", header=0, index_col=0)
 
-                # reads that support a HOM case (~tumor or similar)
-                # variant in at least one haploid PRG and persist
-                # in the diploid PRG are assumed to be specific
+                # 2024-12-04 after discussion w/ Jana and Tobias:
+                # relax/extend the selection criteria as follows:
+                # opt criterion 1:
+                # - read supports a HOM/ALT call in one haploid PRG
+                # opt criterion 2:
+                # - read supports a HET call in both haploid PRGs
+                # criterion 3:
+                # - read supports a HOM/ALT call in the diploid PRG (MAPQ 0 scenario)
+                # the final selection criterion is then constructed as:
+                # select_read = (opt1 OR opt2) AND criterion 3
                 # TODO - make column selection generic
                 hap_hom = ["PRG1_HOM", "PRG2_HOM"]
+                hap_het = ["PRG1_HET", "PRG2_HET"]
                 dip_hom = "PRG_HOM"
 
-                select_hap = (df[hap_hom] > 0).any(axis=1)
-                select_dip = (df[dip_hom] > 0)
+                select_hap_hom = (df[hap_hom] > 0).any(axis=1)
+                select_hap_het = (df[hap_het] > 0).all(axis=1)
+                select_dip_hom = (df[dip_hom] > 0)
 
-                selector = select_hap & select_dip
+                selector = (select_hap_hom | select_hap_het) & select_dip
 
                 case_reads = df.loc[selector, :].copy()
                 case_read_names = sorted(df.index[selector].values)
