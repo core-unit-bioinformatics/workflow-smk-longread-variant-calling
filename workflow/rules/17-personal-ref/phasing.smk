@@ -10,7 +10,11 @@ rule dump_list_of_males:
         for sample, sex in SAMPLE_SEX.items():
             if sex != "male":
                 continue
-            male_samples.append(sample)
+            # we are in the code path for the PRGs,
+            # listing should only contain relevant
+            # male samples as specified via paired samples
+            if sample in PAIRED_CASES or sample in PAIRED_CONTROLS:
+                male_samples.append(sample)
 
         with open(output.lst, "w") as dump:
             _ = dump.write("\n".join(sorted(male_samples)) + "\n")

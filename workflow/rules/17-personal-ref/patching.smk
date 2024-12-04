@@ -114,7 +114,7 @@ rule run_all_generate_consensus:
     input:
         fasta = expand(
             rules.combine_consensus_haplotypes.output.fasta,
-            sample=CONTROL_SAMPLES,
+            sample=PAIRED_CONTROLS,
             read_type=["hifi"],
             ref=["t2tv2"],
             panel=["hgsvc3hprc"],
