@@ -85,13 +85,13 @@ def load_reference_genome(wildcards, index_file=False, plain=False):
         prg_ref = "t2tv2"
         ####################################
 
-        assert CONTROL_SAMPLES
-        assert CASE_SAMPLES
+        assert PAIRED_CONTROLS
+        assert PAIRED_CASES
 
         paired_sample = SAMPLE_PAIRS[wildcards.sample]
 
-        if wildcards.sample in CASE_SAMPLES:
-            assert paired_sample in CONTROL_SAMPLES
+        if wildcards.sample in PAIRED_CASES:
+            assert paired_sample in PAIRED_CONTROLS
         else:
             # TODO - unclear decision ... align the
             # control sample reads to its own personalized
@@ -100,7 +100,7 @@ def load_reference_genome(wildcards, index_file=False, plain=False):
             # of low-cov controls, this will likely not be
             # very informative?
             paired_sample = wildcards.sample
-            assert paired_sample in CONTROL_SAMPLES
+            assert paired_sample in PAIRED_CONTROLS
 
         kwargs = {
             "sample": paired_sample,
@@ -187,7 +187,7 @@ def load_reference_chromosomes(wildcards):
         assert wildcards.ref.startswith("prg")
         assert SAMPLE_PAIRS
 
-        if wildcards.sample in CASE_SAMPLES:
+        if wildcards.sample in PAIRED_CASES:
             prg_sample = SAMPLE_PAIRS[wildcards.sample]
         else:
             prg_sample = wildcards.sample

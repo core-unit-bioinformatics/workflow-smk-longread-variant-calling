@@ -39,16 +39,21 @@ CONTAINER_STORE = pathlib.Path(config.get("container_store", WORKDIR)).resolve(s
 #######
 ### For the time being: only used for personalized reference genome
 
+# TODO
+# potentially, this should be directly encoded via the sample
+# sheet given that the case/control structure can also represented
+# via the sample sheet by now
+
 SAMPLE_PAIRS = None
-CONTROL_SAMPLES = None
-CASE_SAMPLES = None
+PAIRED_CONTROLS = None
+PAIRED_CASES = None
 
 _sample_pairs = config.get("sample_pairs", None)
 if _sample_pairs is not None:
 
     SAMPLE_PAIRS = dict()
-    CONTROL_SAMPLES = []
-    CASE_SAMPLES = []
+    PAIRED_CONTROLS = []
+    PAIRED_CASES = []
 
     for pair_label, sample_pair in _sample_pairs.items():
         assert len(sample_pair) == 2
@@ -64,8 +69,13 @@ if _sample_pairs is not None:
         assert control_sample not in SAMPLE_PAIRS
         SAMPLE_PAIRS[control_sample] = case_sample
 
-        CONTROL_SAMPLES.append(control_sample)
-        CASE_SAMPLES.append(case_sample)
+        if CONTROL_SAMPLES:
+            assert control_sample in CONTROL_SAMPLES
+        if CASE_GROUPS:
+            assert case_sample in CASE_GROUPS["all"]
+
+        PAIRED_CONTROLS.append(control_sample)
+        PAIRED_CASES.append(case_sample)
 
 
 #############################

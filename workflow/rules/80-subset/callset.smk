@@ -107,7 +107,7 @@ if SAMPLE_PAIRS is not None:
         input:
             vcf = expand(
                 rules.compress_index_sv_case_read_callset.output.vcf,
-                sample=CASE_SAMPLES,
+                sample=PAIRED_CASES,
                 ref=USE_REF_GENOMES
             )
 

@@ -170,7 +170,7 @@ if SAMPLE_PAIRS is not None:
             input:
                 tsv = expand(
                     rules.dump_likely_case_reads.output.lst,
-                    sample=CASE_SAMPLES,
+                    sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
                 )
 
 
@@ -180,7 +180,7 @@ if SAMPLE_PAIRS is not None:
                 DIR_RES.joinpath(
                     "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.vcf.gz"
                 ),
-                sample=HIFI_SAMPLES,
+                sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
                 sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
                 ref=["prg", "prg1", "prg2"]
             ),
@@ -188,7 +188,7 @@ if SAMPLE_PAIRS is not None:
                 DIR_RES.joinpath(
                     "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.vcf-stats.txt"
                 ),
-                sample=HIFI_SAMPLES,
+                sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
                 sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
                 ref=["prg", "prg1", "prg2"]
             ),
@@ -196,7 +196,7 @@ if SAMPLE_PAIRS is not None:
                 DIR_RES.joinpath(
                     "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.summary-stats.tsv"
                 ),
-                sample=HIFI_SAMPLES,
+                sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
                 sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
                 ref=["prg", "prg1", "prg2"]
             ),
