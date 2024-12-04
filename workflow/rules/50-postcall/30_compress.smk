@@ -175,13 +175,20 @@ if SAMPLE_PAIRS is not None:
 
 
     rule run_hifi_finalize_sv_callsets_personalized:
+        """TODO / the PRG code path can only work w/ SV callers that report the
+        variant supporting reads. At the moment, this is only sniffles,
+        hence need to adapt the below wildcard lists.
+        """
         input:
             vcf = expand(
                 DIR_RES.joinpath(
                     "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.vcf.gz"
                 ),
                 sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
-                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                sv_calling_toolchain=[
+                    wildcard for wildcard in HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS
+                    if "sniffles" in wildcard
+                ],
                 ref=["prg", "prg1", "prg2"]
             ),
             txt_stats = expand(
@@ -189,7 +196,10 @@ if SAMPLE_PAIRS is not None:
                     "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.vcf-stats.txt"
                 ),
                 sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
-                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                sv_calling_toolchain=[
+                    wildcard for wildcard in HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS
+                    if "sniffles" in wildcard
+                ],
                 ref=["prg", "prg1", "prg2"]
             ),
             tsv_stats = expand(
@@ -197,6 +207,9 @@ if SAMPLE_PAIRS is not None:
                     "callsets", "{sample}_hifi.{sv_calling_toolchain}.{ref}.sv.summary-stats.tsv"
                 ),
                 sample=sorted(set(PAIRED_CASES).intersection(set(HIFI_SAMPLES))),
-                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                sv_calling_toolchain=[
+                    wildcard for wildcard in HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS
+                    if "sniffles" in wildcard
+                ],
                 ref=["prg", "prg1", "prg2"]
             ),
