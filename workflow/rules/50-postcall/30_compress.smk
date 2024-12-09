@@ -156,7 +156,7 @@ if SAMPLE_PAIRS is not None:
                 select_hap_het = (df[hap_het] > 0).all(axis=1)
                 select_dip_hom = (df[dip_hom] > 0)
 
-                selector = (select_hap_hom | select_hap_het) & select_dip
+                selector = (select_hap_hom | select_hap_het) & select_dip_hom
 
                 case_reads = df.loc[selector, :].copy()
                 case_read_names = sorted(df.index[selector].values)
