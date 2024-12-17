@@ -175,7 +175,7 @@ if CASE_GROUPS:
         resources:
             mem_mb=lambda wildcards, attempt: 2048 * attempt
         shell:
-            "bcftools view -s {wildcards.sample} --output-type z9 --output {output.vcf}"
+            "bcftools view -s {wildcards.sample} --output-type z9 --output {output.vcf} {input.vcf}"
                 " && "
             "tabix -p vcf -f {output.vcf}"
 
