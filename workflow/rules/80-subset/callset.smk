@@ -153,6 +153,33 @@ if CASE_GROUPS:
             "bcftools tabix -p vcf -f {output.vcf}"
 
 
+    rule split_multisample_sv_case_callsets_by_sample:
+        """TODO
+        this rule is somewhat of a workaround b/c the VCF annotation
+        pipeline can currently only process single-sample VCFs.
+        """
+        input:
+            vcf = rules.split_multisample_sv_into_case_callsets.output.vcf,
+            tbi = rules.split_multisample_sv_into_case_callsets.output.tbi
+        output:
+            vcf = DIR_RES.joinpath(
+                "callsets", "subsets", "by_sample",
+                "{sample}_{read_type}.{sv_calling_toolchain}.{ref}.sv.case-{case_group}.vcf.gz"
+            ),
+            tbi = DIR_RES.joinpath(
+                "callsets", "subsets", "by_sample",
+                "{sample}_{read_type}.{sv_calling_toolchain}.{ref}.sv.case-{case_group}.vcf.gz.tbi"
+            ),
+        conda:
+            DIR_ENVS.joinpath("biotools.yaml")
+        resources:
+            mem_mb=lambda wildcards, attempt: 2048 * attempt
+        shell:
+            "bcftools view -s {wildcards.sample} --output-type z9 --output {output.vcf}"
+                " && "
+            "tabix -p vcf -f {output.vcf}"
+
+
     rule run_all_subset_sv_case_callsets:
         input:
             vcf = expand(
@@ -161,4 +188,12 @@ if CASE_GROUPS:
                 sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 case_group=sorted(CASE_GROUPS.keys())
-            )
+            ),
+            split_vcf = expand(
+                rules.split_multisample_sv_case_callsets_by_sample.output.vcf,
+                sample=sorted(CASE_GROUPS["all"]),
+                read_type=["hifi"],
+                sv_calling_toolchain=HIFI_SV_CALLING_TOOLCHAIN_WILDCARDS,
+                ref=USE_REF_GENOMES,
+                case_group="all"
+            ),
