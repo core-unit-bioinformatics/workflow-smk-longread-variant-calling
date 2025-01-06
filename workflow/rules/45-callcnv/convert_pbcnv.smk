@@ -61,7 +61,7 @@ rule add_avg_minmax_read_depth_to_cn_track:
         )
     conda:
         DIR_ENVS.joinpath("ucsctools.yaml")
-    shell:
+    resources:
         mem_mb=lambda wildcards, attempt: 1024 * attempt
     shell:
         "bigWigAverageOverBed -bedOut=/dev/stdout -minMax {input.bigwig} {input.bed} /dev/null | gzip > {output.tsv}"
