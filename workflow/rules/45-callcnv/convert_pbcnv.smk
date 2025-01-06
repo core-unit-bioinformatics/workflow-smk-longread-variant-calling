@@ -23,8 +23,6 @@ rule add_unique_name_to_pbcnv_cn_track:
                 "{sample}_hifi.{aligner}-pbcnv.{ref}.cn-uniq-name.bed.gz"
             )
         )
-    conda:
-        DIR_ENVS.joinpath("ucsctools.yaml")
     resources:
         mem_mb=lambda wildcards, attempt: 2048 * attempt
     run:
