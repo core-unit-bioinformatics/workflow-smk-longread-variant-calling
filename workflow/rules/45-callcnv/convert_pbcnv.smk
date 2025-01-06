@@ -102,7 +102,15 @@ rule finalize_pbcnv_conversion:
         # drop unnecessary columns
         table.drop(["depth_min", "depth_max"], axis=1, inplace=True)
         # add log2 column
+        # add fudge factor to make log2 well-defined
+        min_nz_depth = table.loc[table["depth_avg"] > 0, "depth_avg"].min()
+        # any below?
+        select_zeros = table["depth_avg"] < min_nz_depth
+        if select_zeros.any():
+            fudged_min = min_nz_depth / 10
+            table.loc[select_zeros, "depth_avg"] = fudged_min
         table["depth_log2"] = np.log2(table["depth_avg"].values).round(3)
+        assert not np.isinf(table["depth_log2"].values).any()
         table["length"] = table["end"] - table["start"]
         table["probes"] = (table["length"] / PBCNV_BIN_SIZE).abs().astype(int)
 
