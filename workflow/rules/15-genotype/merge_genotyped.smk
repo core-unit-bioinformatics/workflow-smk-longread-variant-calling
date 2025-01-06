@@ -140,19 +140,21 @@ rule concat_region_sample_genotypes:
         "tabix -p vcf --threads {threads} {output.vcf}"
 
 
-rule run_all_merge_genotypes:
-    input:
-        vcf = expand(
-            rules.concat_region_sample_genotypes.output.vcf,
-            read_type=["hifi"],
-            ref=["t2tv2"],
-            panel=["hgsvc3hprc"],
-            allele_repr=["malc", "balc"]
-        ),
-        tbi = expand(
-            rules.concat_region_sample_genotypes.output.tbi,
-            read_type=["hifi"],
-            ref=["t2tv2"],
-            panel=["hgsvc3hprc"],
-            allele_repr=["malc", "balc"]
-        ),
+if SAMPLE_PAIRS is not None:
+
+    rule run_all_merge_genotypes:
+        input:
+            vcf = expand(
+                rules.concat_region_sample_genotypes.output.vcf,
+                read_type=["hifi"],
+                ref=["t2tv2"],
+                panel=["hgsvc3hprc"],
+                allele_repr=["malc", "balc"]
+            ),
+            tbi = expand(
+                rules.concat_region_sample_genotypes.output.tbi,
+                read_type=["hifi"],
+                ref=["t2tv2"],
+                panel=["hgsvc3hprc"],
+                allele_repr=["malc", "balc"]
+            ),
