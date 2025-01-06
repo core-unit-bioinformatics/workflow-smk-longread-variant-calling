@@ -138,14 +138,14 @@ if SAMPLE_PAIRS is not None:
         input:
             vcfs_malc = expand(
                 rules.run_pangenie_genotyping.output.vcf,
-                sample=sorted(set(PAIRED_CASES).union(set(PAIRED_CONTROLS))),
+                sample=PAIRED_SAMPLES,
                 read_type=["hifi"],
                 ref=["t2tv2"],
                 panel=["hgsvc3hprc"]
             ),
             vcfs_balc = expand(
                 rules.convert_multiallelic_to_biallelic_repr.output.vcf,
-                sample=sorted(set(PAIRED_CASES).union(set(PAIRED_CONTROLS))),
+                sample=PAIRED_SAMPLES,
                 read_type=["hifi"],
                 ref=["t2tv2"],
                 panel=["hgsvc3hprc"]

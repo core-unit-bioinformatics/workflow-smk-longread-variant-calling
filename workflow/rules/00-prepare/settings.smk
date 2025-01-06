@@ -47,6 +47,7 @@ CONTAINER_STORE = pathlib.Path(config.get("container_store", WORKDIR)).resolve(s
 SAMPLE_PAIRS = None
 PAIRED_CONTROLS = None
 PAIRED_CASES = None
+PAIRED_SAMPLES = None
 
 _sample_pairs = config.get("sample_pairs", None)
 if _sample_pairs is not None:
@@ -76,6 +77,10 @@ if _sample_pairs is not None:
 
         PAIRED_CONTROLS.append(control_sample)
         PAIRED_CASES.append(case_sample)
+
+    PAIRED_SAMPLES = sorted(set(PAIRED_CASES).union(set(PAIRED_CONTROLS)))
+else:
+    PAIRED_SAMPLES = []
 
 
 #############################

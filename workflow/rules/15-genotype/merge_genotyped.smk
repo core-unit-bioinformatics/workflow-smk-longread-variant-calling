@@ -7,14 +7,14 @@ rule create_sample_genotypes_fofn:
             DIR_PROC.joinpath(
                 "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.{allele_repr}.vcf.gz"
             ),
-            sample=sorted(set(PAIRED_CASES).union(set(PAIRED_CONTROLS))),
+            sample=PAIRED_SAMPLES,
             allow_missing=True
         ),
         tbi = expand(
             DIR_PROC.joinpath(
                 "15-genotype", "genotyped_samples", "{sample}_{read_type}_{ref}_{panel}.pgt.{allele_repr}.vcf.gz.tbi"
             ),
-            sample=sorted(set(PAIRED_CASES).union(set(PAIRED_CONTROLS))),
+            sample=PAIRED_SAMPLES,
             allow_missing=True
         )
     output:

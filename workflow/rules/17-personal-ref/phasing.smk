@@ -6,6 +6,7 @@ rule dump_list_of_males:
             "17-personal-ref", "male_samples.list"
         )
     run:
+        assert len(PAIRED_SAMPLES) > 0
         male_samples = []
         for sample, sex in SAMPLE_SEX.items():
             if sex != "male":
@@ -13,7 +14,7 @@ rule dump_list_of_males:
             # we are in the code path for the PRGs,
             # listing should only contain relevant
             # male samples as specified via paired samples
-            if sample in PAIRED_CASES or sample in PAIRED_CONTROLS:
+            if sample in PAIRED_SAMPLES:
                 male_samples.append(sample)
 
         with open(output.lst, "w") as dump:
