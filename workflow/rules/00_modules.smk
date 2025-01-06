@@ -33,6 +33,7 @@ include: "40-callsv/hifi.smk"
 
 include: "45-callcnv/pyutils.smk"
 include: "45-callcnv/hifi.smk"
+include: "45-callcnv/convert_pbcnv.smk"
 
 include: "50-postcall/10_split.smk"
 include: "50-postcall/20_concat.smk"
