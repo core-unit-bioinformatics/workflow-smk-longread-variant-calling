@@ -81,6 +81,46 @@ rule cnv_calling_pbcnv:
         "--output-prefix {params.outprefix}"
 
 
+rule combine_depth_foldchange_track:
+    """In the lingo of deepTools,
+    file 1 is usually the case/treatment
+    file 2 is usually the control
+    This convention is also used in this rule.
+    """
+    input:
+        pair_case = lambda wildcards: expand(
+            rules.cnv_calling_pbcnv.output.depth,
+            sample=SAMPLE_PAIRS[wildcards.pairing]["case"],
+            allow_missing=True
+        ),
+        pair_control = lambda wildcards: expand(
+            rules.cnv_calling_pbcnv.output.depth,
+            sample=SAMPLE_PAIRS[wildcards.pairing]["control"],
+            allow_missing=True
+        )
+    output:
+        foldchange = DIR_PROC.joinpath(
+            "45-callcnv", "fc_tracks", "{pairing}_hifi.{aligner}-pbcnv.{ref}.log2.bw",
+        ),
+    conda:
+        DIR_ENVS.joinpath("biotools.yaml")
+    threads: CPU_LOW
+    resources:
+        mem_mb=lambda wildcards, attempt: 16384 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt * attempt
+    params:
+        scale_case=lambda wildcards: FC_SCALE_FACTORS.get(
+            SAMPLE_PAIRS[wildcards.pairing]["case"], 1
+        ),
+        scale_control=lambda wildcards: FC_SCALE_FACTORS.get(
+            SAMPLE_PAIRS[wildcards.pairing]["control"], 1
+        )
+    shell:
+        "bigwigCompare -b1 {input.pair_case} -b2 {input.pair_control} "
+        "--skipZeroOverZero --operation log2 -p {threads} "
+        "--outFileName {output.foldchange} --outFileFormat bigwig"
+
+
 rule drop_zero_length_windows:
     """hificnv has the somewhat problematic property of producing
     zero-length BED regions that break the subsequent call to

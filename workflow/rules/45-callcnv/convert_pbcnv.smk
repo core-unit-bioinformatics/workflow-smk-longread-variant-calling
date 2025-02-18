@@ -65,6 +65,23 @@ rule add_avg_minmax_read_depth_to_cn_track:
         "bigWigAverageOverBed -bedOut=/dev/stdout -minMax {input.bigwig} {input.bed} /dev/null | gzip > {output.tsv}"
 
 
+rule add_avg_minmax_log2_fc_to_cn_track:
+    input:
+        bed = rules.add_unique_name_to_pbcnv_cn_track.output.bed,
+        bigwig = rules.combine_depth_foldchange_track.output.foldchange
+    output:
+        tsv = DIR_PROC.joinpath(
+                "temp", "45-callcnv", "convert_pbcnv",
+                "{pairing}_hifi.{aligner}-pbcnv.{ref}.cn-log2-fc.tsv.gz"
+            )
+    conda:
+        DIR_ENVS.joinpath("ucsctools.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
+    shell:
+        "bigWigAverageOverBed -bedOut=/dev/stdout -minMax {input.bigwig} {input.bed} /dev/null | gzip > {output.tsv}"
+
+
 rule finalize_pbcnv_conversion:
     """
     The output to .cns format follows the description
@@ -145,4 +162,10 @@ rule run_all_pbcnv_cnvkit_conversion:
             sample=HIFI_SAMPLES,
             aligner=ALIGNER_FOR_CALLER[("pbcnv", "hifi")],
             ref=USE_REF_GENOMES,
+        ),
+        log2fc = expand(
+            rules.add_avg_minmax_log2_fc_to_cn_track.output.tsv,
+            pairing=sorted(SAMPLE_PAIRS.keys()),
+            aligner=ALIGNER_FOR_CALLER[("pbcnv", "hifi")],
+            ref=USE_REF_GENOMES
         )
