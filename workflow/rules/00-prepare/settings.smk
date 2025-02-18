@@ -48,11 +48,13 @@ SAMPLE_PAIRS = None
 PAIRED_CONTROLS = None
 PAIRED_CASES = None
 PAIRED_SAMPLES = None
+SAMPLE_TO_PAIRING = None
 
 _sample_pairs = config.get("sample_pairs", None)
 if _sample_pairs is not None:
 
     SAMPLE_PAIRS = dict()
+    SAMPLE_TO_PAIRING = dict()
     PAIRED_CONTROLS = []
     PAIRED_CASES = []
 
@@ -67,8 +69,10 @@ if _sample_pairs is not None:
         SAMPLE_PAIRS[pair_label] = pairing
         assert case_sample not in SAMPLE_PAIRS
         SAMPLE_PAIRS[case_sample] = control_sample
+        SAMPLE_TO_PAIRING[case_sample] = pair_label
         assert control_sample not in SAMPLE_PAIRS
         SAMPLE_PAIRS[control_sample] = case_sample
+        SAMPLE_TO_PAIRING[control_sample] = pair_label
 
         if CONTROL_SAMPLES:
             assert control_sample in CONTROL_SAMPLES
