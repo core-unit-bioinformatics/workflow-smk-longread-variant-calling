@@ -37,3 +37,17 @@ def suffixed_number_to_int(number):
         num = int(number[:1]) * factors[suffix]
 
     return int(num)
+
+
+def load_foldchange_scale_factor(wildcards, which):
+
+    assert which in ["case", "control"]
+    if not SAMPLE_PAIRS:
+        scale_factor = 1
+    else:
+        sample = SAMPLE_PAIRS[wildcards.pairing][which]
+        try:
+            scale_factor = HIFI_CNV_FOLDCHANGE_SCALE_FACTORS[sample]
+        except KeyError:
+            scale_factor = HIFI_CNV_FOLDCHANGE_SCALE_FACTORS.get(which, 1)
+    return scale_factor

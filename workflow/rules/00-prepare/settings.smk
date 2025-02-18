@@ -367,3 +367,5 @@ for toolchain in RUN_HIFI_CNV_CALLING_TOOLCHAIN:
     )
 
     ALIGNER_FOR_CALLER[(wildcard_call, "hifi")].append(wildcard_aln)
+
+HIFI_CNV_FOLDCHANGE_SCALE_FACTORS = config.get("hifi_cnv_foldchange_scale_factors", dict())

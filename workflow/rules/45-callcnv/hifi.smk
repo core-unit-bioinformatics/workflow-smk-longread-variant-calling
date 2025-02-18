@@ -109,12 +109,8 @@ rule combine_depth_foldchange_track:
         mem_mb=lambda wildcards, attempt: 16384 * attempt,
         time_hrs=lambda wildcards, attempt: attempt * attempt
     params:
-        scale_case=lambda wildcards: FC_SCALE_FACTORS.get(
-            SAMPLE_PAIRS[wildcards.pairing]["case"], 1
-        ),
-        scale_control=lambda wildcards: FC_SCALE_FACTORS.get(
-            SAMPLE_PAIRS[wildcards.pairing]["control"], 1
-        )
+        scale_case=lambda wildcards: load_foldchange_scale_factor(wildcards, "case"),
+        scale_control=lambda wildcards: load_foldchange_scale_factor(wildcards, "control")
     shell:
         "bigwigCompare -b1 {input.pair_case} -b2 {input.pair_control} "
         "--skipZeroOverZero --operation log2 -p {threads} "
