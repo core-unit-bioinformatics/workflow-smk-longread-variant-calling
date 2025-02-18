@@ -1,29 +1,25 @@
 [cubi.workflow]
-pid = "undefined"
+pid = "https://github.com/core-unit-bioinformatics/workflow-smk-longread-variant-calling"
 name = "longread-variant-calling"
 version = "prototype"
+
+[cubi.metadata]
+pid = "https://github.com/core-unit-bioinformatics/template-metadata-files"
+version = "1.6.1"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
 
 [cubi.workflow.template]
 pid = "undefined"
 system = "smk"
 version = "1.2.0"
 
-[tool.black]
-line-length = 88
-
 [tool.pylint.format]
 max-line-length = "88"
 
 [tool.pylint.messages_control]
-disable=[
-  "logging-fstring-interpolation",
-  "useless-return",
-  "missing-module-docstring"
-]
-
-[tool.isort]
-profile = "black"
-
-[cubi.metadata]
-pid = "undefined"
-version = "1.3.0"
+disable = [ "logging-fstring-interpolation", "useless-return", "missing-module-docstring",]

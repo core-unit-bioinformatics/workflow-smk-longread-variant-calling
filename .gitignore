@@ -211,3 +211,6 @@ wd/
 backup/
 .backup/
 *.bak
+
+# Ignore all paths containing the keyword *cache*
+*cache*
