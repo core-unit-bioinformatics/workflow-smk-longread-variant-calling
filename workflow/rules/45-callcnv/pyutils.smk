@@ -42,7 +42,7 @@ def suffixed_number_to_int(number):
 def load_foldchange_scale_factor(wildcards, which):
 
     assert which in ["case", "control"]
-    if not SAMPLE_PAIRS:
+    if SAMPLE_PAIRS is None:
         scale_factor = 1
     else:
         sample = SAMPLE_PAIRS[wildcards.pairing][which]
