@@ -114,6 +114,7 @@ rule combine_depth_foldchange_track:
     shell:
         "bigwigCompare -b1 {input.pair_case} -b2 {input.pair_control} "
         "--skipZeroOverZero --operation log2 -p {threads} "
+        "--scaleFactors {params.scale_case}:{params.scale_control} "
         "--outFileName {output.foldchange} --outFileFormat bigwig"
 
 
