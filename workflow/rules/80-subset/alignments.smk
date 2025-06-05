@@ -97,3 +97,33 @@ if HIFI_SAMPLES:
                 margin=config.get("roi_region_margin", "10k")
 
             ),
+
+
+if ONT_SAMPLES:
+
+    rule run_all_extract_roi_ont_alignment_subset:
+        input:
+            bam = expand(
+                DIR_RES.joinpath(
+                    "alignments", "roi_subsets", "{ref_roi}",
+                    "{sample}_{read_type}.{aligner}.{ref_roi}.ext-{margin}.main.sort.bam"
+                ),
+                sample=ONT_SAMPLES,
+                read_type=["ont"],
+                aligner=ONT_ALIGNER_WILDCARDS,
+                ref_roi=USER_ROI_FILE_WILDCARDS,
+                margin=config.get("roi_region_margin", "10k")
+
+            ),
+            bai = expand(
+                DIR_RES.joinpath(
+                    "alignments", "roi_subsets", "{ref_roi}",
+                    "{sample}_{read_type}.{aligner}.{ref_roi}.ext-{margin}.main.sort.bam.bai"
+                ),
+                sample=ONT_SAMPLES,
+                read_type=["ont"],
+                aligner=ONT_ALIGNER_WILDCARDS,
+                ref_roi=USER_ROI_FILE_WILDCARDS,
+                margin=config.get("roi_region_margin", "10k")
+
+            ),
