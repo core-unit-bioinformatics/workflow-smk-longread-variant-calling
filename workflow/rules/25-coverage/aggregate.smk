@@ -105,9 +105,9 @@ if ONT_SAMPLES:
         input:
             agg = expand(
                 rules.aggregate_mosdepth_windowed_coverage.output.tsv,
-                sample=HIFI_SAMPLES,
+                sample=ONT_SAMPLES,
                 read_type=["ont"],
-                aligner=HIFI_ALIGNER_WILDCARDS,
+                aligner=ONT_ALIGNER_WILDCARDS,
                 ref=USE_REF_GENOMES,
                 mapq=MOSDEPTH_MIN_MAPQ,
                 mrg_win=["1M", "100k"]
