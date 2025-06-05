@@ -11,6 +11,7 @@ include: "00-prepare/settings.smk"
 
 include: "10-align/pyutils.smk"
 include: "10-align/hifi.smk"
+include: "10-align/ont.smk"
 
 include: "15-genotype/pangenie_prep.smk"
 include: "15-genotype/pangenie_type.smk"

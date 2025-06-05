@@ -151,38 +151,74 @@ rule compute_alignment_stats:
         "samtools stats --threads {threads} {input.bam} > {output.stats}"
 
 
-rule run_all_hifi_align:
-    input:
-        bams_main = expand(
-            rules.split_merged_alignments.output.main,
-            read_type=["hifi"],
-            ref=USE_REF_GENOMES,
-            sample=HIFI_SAMPLES,
-            aligner=HIFI_ALIGNER_WILDCARDS
-        ),
-        bams_aux = expand(
-            rules.split_merged_alignments.output.aux,
-            read_type=["hifi"],
-            ref=USE_REF_GENOMES,
-            sample=HIFI_SAMPLES,
-            aligner=HIFI_ALIGNER_WILDCARDS
-        ),
-        stats = expand(
-            rules.compute_alignment_flagstats.output.stats,
-            ref=USE_REF_GENOMES,
-            sample=HIFI_SAMPLES,
-            read_type=["hifi"],
-            aligner=HIFI_ALIGNER_WILDCARDS,
-            bam_type=["main", "aux"]
-        ),
-        bamstats = expand(
-            rules.compute_alignment_stats.output.stats,
-            ref=USE_REF_GENOMES,
-            sample=HIFI_SAMPLES,
-            read_type=["hifi"],
-            aligner=HIFI_ALIGNER_WILDCARDS,
-            bam_type=["main", "aux"]
-            )
+if HIFI_SAMPLES:
+    rule run_all_hifi_align:
+        input:
+            bams_main = expand(
+                rules.split_merged_alignments.output.main,
+                read_type=["hifi"],
+                ref=USE_REF_GENOMES,
+                sample=HIFI_SAMPLES,
+                aligner=HIFI_ALIGNER_WILDCARDS
+            ),
+            bams_aux = expand(
+                rules.split_merged_alignments.output.aux,
+                read_type=["hifi"],
+                ref=USE_REF_GENOMES,
+                sample=HIFI_SAMPLES,
+                aligner=HIFI_ALIGNER_WILDCARDS
+            ),
+            stats = expand(
+                rules.compute_alignment_flagstats.output.stats,
+                ref=USE_REF_GENOMES,
+                sample=HIFI_SAMPLES,
+                read_type=["hifi"],
+                aligner=HIFI_ALIGNER_WILDCARDS,
+                bam_type=["main", "aux"]
+            ),
+            bamstats = expand(
+                rules.compute_alignment_stats.output.stats,
+                ref=USE_REF_GENOMES,
+                sample=HIFI_SAMPLES,
+                read_type=["hifi"],
+                aligner=HIFI_ALIGNER_WILDCARDS,
+                bam_type=["main", "aux"]
+                )
+
+
+if ONT_SAMPLES:
+    rule run_all_ont_align:
+        input:
+            bams_main = expand(
+                rules.split_merged_alignments.output.main,
+                read_type=["ont"],
+                ref=USE_REF_GENOMES,
+                sample=ONT_SAMPLES,
+                aligner=ONT_ALIGNER_WILDCARDS
+            ),
+            bams_aux = expand(
+                rules.split_merged_alignments.output.aux,
+                read_type=["ont"],
+                ref=USE_REF_GENOMES,
+                sample=ONT_SAMPLES,
+                aligner=ONT_ALIGNER_WILDCARDS
+            ),
+            stats = expand(
+                rules.compute_alignment_flagstats.output.stats,
+                ref=USE_REF_GENOMES,
+                sample=ONT_SAMPLES,
+                read_type=["ont"],
+                aligner=ONT_ALIGNER_WILDCARDS,
+                bam_type=["main", "aux"]
+            ),
+            bamstats = expand(
+                rules.compute_alignment_stats.output.stats,
+                ref=USE_REF_GENOMES,
+                sample=ONT_SAMPLES,
+                read_type=["ont"],
+                aligner=ONT_ALIGNER_WILDCARDS,
+                bam_type=["main", "aux"]
+                )
 
 
 if SAMPLE_PAIRS is not None:
@@ -218,4 +254,3 @@ if SAMPLE_PAIRS is not None:
                 aligner=HIFI_ALIGNER_WILDCARDS,
                 bam_type=["main", "aux"]
             )
-
