@@ -7,16 +7,8 @@ in the main Snakefile
 """
 
 WORKFLOW_OUTPUT = []
-
-WORKFLOW_OUTPUT.extend(ALIGN_HIFI_OUTPUT)
-WORKFLOW_OUTPUT.extend(ALIGN_ONT_OUTPUT)
-
-WORKFLOW_OUTPUT.extend(COV_HIFI_GENOME)
-WORKFLOW_OUTPUT.extend(COV_HIFI_ROI)
-
-WORKFLOW_OUTPUT.extend(COV_ONT_GENOME)
-WORKFLOW_OUTPUT.extend(COV_ONT_ROI)
-
-WORKFLOW_OUTPUT.extend(CALL_HIFI_SHORT_OUTPUT)
-WORKFLOW_OUTPUT.extend(CALL_HIFI_SV_OUTPUT)
-WORKFLOW_OUTPUT.extend(CALL_HIFI_CNV_OUTPUT)
+# Example for extending the output
+# with output from another module
+# (remember to include that module
+# in 00_modules.smk):
+# WORKFLOW_OUTPUT.extend(MODULE_OUTPUT)

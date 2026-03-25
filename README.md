@@ -14,17 +14,11 @@ In essence, the following should suffice to get started:
 
 For a detailed setup guide, please refer to [the workflow documentation](docs/README.md).
 
+**Internal (template) remark**: adapt the above if the workflow deployment has additional requirements (e.g., Singularity).
+
 ## Required input data
 
 Add info here - be concise, and provide more details in [the workflow documentation](docs/README.md).
-
-### Assumptions about the input data
-
-This workflow assumes that ...
-
-1. there is a one-to-one mapping between sample name and input files. In other words, no
-   data file can be used twice for different samples.
-    - developer note: see data structure `MAP_PATHID_TO_FILE_INFO` and function in `rules/10-align/pyutils.smk`
 
 ## Produced output data
 

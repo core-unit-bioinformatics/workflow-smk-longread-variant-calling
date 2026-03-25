@@ -1,4 +1,5 @@
-name: smk_dev_env
+# legacy = Snakemake v7
+name: smk_exec_env
 dependencies:
   # =====
   # packages for Snakemake
@@ -7,9 +8,7 @@ dependencies:
   - Python=3.11.*
   - pip=25.1.*
   - conda
-  - snakemake=9.8.*
-  - snakemake-interface-common=1.21.*
-  - snakemake-executor-plugin-cluster-generic=1.0.*
+  - snakemake=7.32.*
   - coincbc=2.10.*
   - pyyaml=6.0.*
   - toml=0.10.*
@@ -23,7 +22,9 @@ dependencies:
   # function, move the package up
   - psutil=7.0.*
   - pydantic=2.11.*
+  - python-dateutil=2.9.*
   - smart_open=7.3.*
+  - cachetools=5.5.*
   - humanfriendly=10.*
   - requests=2.32.*
   # =====
@@ -34,12 +35,10 @@ dependencies:
   - hdf5=1.14.*
   - pyarrow=20.0.*
   - numpy=2.3.*
-  # =====
-  # packages only needed for the
-  # development environment
-  - snakefmt=0.11.*
-  - pylint=3.3.*
-  - isort=6.0.*
-  - black=24.10.*
-  - ruff=0.12.*
-
+  # === below:
+  # useful dep, no hard req. yet
+  # note to devs:
+  # if any of the below is used
+  # explicitly in a template
+  # function, move the package up
+  - protobuf=6.31.*
