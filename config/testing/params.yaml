@@ -7,7 +7,12 @@ input_file_ext:
   - fna.gz
 
 reference_genomes:
-  t2tv2: t2t-chm13-v2.0.fa
+  mock-ref: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_hg38.fa
 
 run_hifi_aligner:
   - minimap2
+
+minimum_sv_length_call: 50
+minimum_mapq: 20
+minimum_coverage: 5
+minimum_alignment_length: 1000
