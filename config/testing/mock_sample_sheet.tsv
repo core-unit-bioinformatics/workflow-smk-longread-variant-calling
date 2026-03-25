@@ -1,0 +1,2 @@
+sample	read_type	input_path
+test1	hifi	/home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_read_R1.fastq,/home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_read_R2.fastq
