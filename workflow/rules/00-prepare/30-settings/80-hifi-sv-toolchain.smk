@@ -7,7 +7,6 @@ import sys
 
 HIFI_SV_CALLER_NAME_MAPPING = {
     "sniffles": "sniffles",
-    "cutesv": "cutesv",
 }
 
 RUN_HIFI_SV_CALLING_TOOLCHAIN = config.get("run_hifi_sv_toolchain", [])

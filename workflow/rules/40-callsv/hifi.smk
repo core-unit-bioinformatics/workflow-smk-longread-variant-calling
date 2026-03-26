@@ -150,68 +150,6 @@ rule sv_call_sniffles_mosaic_hifi:
         "--vcf {output.vcf} &> {log}"
 
 
-rule sv_call_cutesv_hifi:
-    """
-    Important: the temporary working directory
-    must exist before cuteSV starts!
-
-    The first 4 runtime parameters (cluster bias/ratio merging)
-    are the recommended default for HiFi (see tool help).
-
-    """
-    input:
-        bam = expand(
-            rules.split_merged_alignments.output.main,
-            read_type="hifi",
-            allow_missing=True
-        ),
-        bai = expand(
-            rules.split_merged_alignments.output.main_bai,
-            read_type="hifi",
-            allow_missing=True
-        ),
-        ref = lambda wildcards: load_reference_genome(wildcards),
-        ref_idx = lambda wildcards: load_reference_genome(wildcards, index_file=True)
-        # ref = lambda wildcards: REF_GENOMES[wildcards.ref],
-        # ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
-    output:
-        vcf = DIR_PROC.joinpath(
-            "40-callsv", "{sample}_hifi.{aligner}-cutesv.{ref}.vcf"
-        ),
-    log:
-        DIR_LOG.joinpath("40-callsv", "{sample}_hifi.{aligner}-cutesv.{ref}.log")
-    benchmark:
-        DIR_RSRC.joinpath("40-callsv", "{sample}_hifi.{aligner}-cutesv.{ref}.rsrc")
-    conda:
-        DIR_ENVS.joinpath("caller", "cutesv.yaml")
-    threads: CPU_LOW
-    resources:
-        mem_mb=lambda wildcards, attempt: 32768 * attempt,
-        time_hrs=lambda wildcards, attempt: attempt*attempt,
-    params:
-        min_sv_len = MIN_SV_LEN_CALL,
-        min_mapq = lambda wildcards: load_min_mapq_threshold(wildcards),
-        min_cov = MIN_COV,
-        min_aln_len = MIN_ALN_LEN,
-        tmp_wd = lambda wildcards, output: pathlib.Path(output.vcf).with_suffix(".wd.tmp")
-    shell:
-        "rm -rfd {params.tmp_wd} && mkdir -p {params.tmp_wd} "
-            " && "
-        "cuteSV -t {threads} -S {wildcards.sample} "
-        "--report_readid "
-        "--genotype "
-        "--max_cluster_bias_INS 1000 "
-        "--diff_ratio_merging_INS 0.9 "
-        "--max_cluster_bias_DEL 1000 "
-        "--diff_ratio_merging_DEL 0.5 "
-        "--min_size {params.min_sv_len} "
-        "--min_mapq {params.min_mapq} "
-        "--min_read_len {params.min_aln_len} "
-        "--min_support {params.min_cov} "
-        "{input.bam} {input.ref} {output.vcf} {params.tmp_wd} &> {log}"
-        " ; rm -rfd {params.tmp_wd}"
-
-
 rule run_sniffles_hifi_sv_calling:
     input:
         vcf = expand(
@@ -232,18 +170,6 @@ rule run_sniffles_hifi_sv_calling_mosaic:
             ),
             sample=HIFI_SAMPLES,
             aligner=ALIGNER_FOR_CALLER[("sniffles", "hifi")],
-            ref=USE_REF_GENOMES
-        )
-
-
-rule run_cutesv_hifi_sv_calling:
-    input:
-        vcf = expand(
-            DIR_PROC.joinpath(
-                "40-callsv", "{sample}_hifi.{aligner}-cutesv.{ref}.vcf"
-            ),
-            sample=HIFI_SAMPLES,
-            aligner=ALIGNER_FOR_CALLER[("cutesv", "hifi")],
             ref=USE_REF_GENOMES
         )
 
