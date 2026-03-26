@@ -5,7 +5,7 @@ import collections
 import re
 from enum import Enum
 
-
+# Global metadata containers used by Snakemake
 SAMPLES = None
 SAMPLE_SEX = None
 
@@ -22,8 +22,10 @@ ONT_INPUT = []
 MAP_SAMPLE_TO_INPUT_FILES = None
 MAP_PATHID_TO_FILE_INFO = None
 
+# Trio-related globals
 MATERNAL_ID_MAP = {}
 PATERNAL_ID_MAP = {}
+TRIO_CHILDREN = []
 
 
 class SampleSheetColumns(Enum):
@@ -102,6 +104,7 @@ def validate_sample_sheet_columns(df, mode):
     if missing:
         raise ValueError(f"Missing required columns for mode '{mode}': {missing}")
 
+
 def process_sample_sheet():
     """
     Main entry point:
@@ -113,7 +116,6 @@ def process_sample_sheet():
     """
 
     SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
-
     user_mode = config.get("mode", "population")
 
     SAMPLE_SHEET = pandas.read_csv(
@@ -123,13 +125,18 @@ def process_sample_sheet():
         comment="#"
     )
 
+    # Normalize column names
     SAMPLE_SHEET = SampleSheetColumns.normalize_columns(SAMPLE_SHEET)
+
     # Normalize parental IDs if present
     for col in ["maternal_id", "paternal_id"]:
-    	if col in SAMPLE_SHEET.columns:
-        	SAMPLE_SHEET[col] = SAMPLE_SHEET[col].fillna("0").astype(str).str.strip()
-
-
+        if col in SAMPLE_SHEET.columns:
+            SAMPLE_SHEET[col] = (
+                SAMPLE_SHEET[col]
+                .fillna("0")
+                .astype(str)
+                .str.strip()
+            )
 
     has_maternal = "maternal_id" in SAMPLE_SHEET.columns
     has_paternal = "paternal_id" in SAMPLE_SHEET.columns
@@ -156,9 +163,9 @@ def process_sample_sheet():
         )
 
     mode = user_mode
-
     validate_sample_sheet_columns(SAMPLE_SHEET, mode)
 
+    # Trio-specific: build pedigree maps and validate
     if mode == "trio":
         global MATERNAL_ID_MAP, PATERNAL_ID_MAP
         MATERNAL_ID_MAP = {}
@@ -202,6 +209,7 @@ def process_sample_sheet():
                     "is not present as a sample in the sheet."
                 )
 
+    # Collect input files and hashes
     sample_input, path_input = collect_input_files(SAMPLE_SHEET)
     all_samples = sorted(sample_input.keys())
 
@@ -269,18 +277,19 @@ def process_sample_sheet():
         if len(sample_info["ont"]["paths"]) > 0:
             ONT_SAMPLES.append(sample)
 
+    # Trio children list (only meaningful in trio mode, but harmless otherwise)
+    global TRIO_CHILDREN
+    TRIO_CHILDREN = [
+        sample for sample in SAMPLES
+        if MATERNAL_ID_MAP.get(sample, "0") != "0"
+        or PATERNAL_ID_MAP.get(sample, "0") != "0"
+    ]
+
     return
 
-def collect_input_files(sample_sheet):
-    """
-    For each sample:
-    - Parse input_path entries
-    - Resolve FASTQ files (direct or directory)
-    - Compute SHA256 hashes and short path IDs
-    - Build sample → read_type → file lists
-    - Build global path_id → file metadata map
-    """
 
+def collect_input_files(sample_sheet):
+  
     sample_input = dict()
     path_input = dict()
 
@@ -302,6 +311,11 @@ def collect_input_files(sample_sheet):
         sample_input[row.sample][read_type]["path_ids"].extend(path_ids)
 
         for path, full_hash, path_id in zip(input_files, input_hashes, path_ids):
+            # TODO
+            # ASM
+            # Ignoring the unlikely event of a genuine hash
+            # collision, this enforces the assumption of a
+            # 1-to-1 mapping from sample to input file
             assert path_id not in path_input, "Hash prefix collision"
             path_input[path_id] = {
                 "sample": row.sample,
@@ -394,4 +408,6 @@ def _build_constraint(values):
     constraint = "(" + "|".join(escaped_values) + ")"
     return constraint
 
+
 process_sample_sheet()
+
