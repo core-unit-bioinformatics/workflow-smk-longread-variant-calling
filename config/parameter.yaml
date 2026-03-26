@@ -11,7 +11,9 @@ input_file_ext:
 # genomes to use?
 # reference_genomes:
 #   label: fasta_file_name
-
+reference_genomes:  #test
+  mock-ref: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_hg38.fa  #test
+  
 ######################################
 ### GENERAL ALIGNER RUNTIME PARAMETERS
 ######################################
@@ -37,7 +39,7 @@ run_ont_aligner:
 
 run_hifi_sv_toolchain:
   - minimap2, sniffles
-  - minimap2, pbsv
+  # - minimap2, pbsv
   # - minimap2, cuteSV
 
 run_hifi_cnv_toolchain:
@@ -88,10 +90,12 @@ mosdepth_min_mapq: [0, 20]
 
 # only v1.5.0+ supports low-error
 # ONT reads (>=10.4)
-deepvariant: deepvariant_1.6.0.sif
+deepvariant: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_deepvariant_1.6.0_container.sif  #test
 deepvariant_models:
   hifi: PACBIO
   ont: ONT_R104
+
+container_store: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_deepvariant_1.6.0_container.sif  #test
 
 # This is used to split the potentially
 # large short variant callsets
