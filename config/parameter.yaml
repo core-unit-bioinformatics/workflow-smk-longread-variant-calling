@@ -91,12 +91,12 @@ mosdepth_min_mapq: [0, 20]
 
 # only v1.5.0+ supports low-error
 # ONT reads (>=10.4)
-deepvariant: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_deepvariant_1.6.0_container.sif  #test
+deepvariant: mock_deepvariant_1.6.0_container.sif  #test
 deepvariant_models:
   hifi: PACBIO
   ont: ONT_R104
 
-container_store: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_deepvariant_1.6.0_container.sif  #test
+container_store: mock_deepvariant_1.6.0_container.sif  #test
 
 # This is used to split the potentially
 # large short variant callsets
