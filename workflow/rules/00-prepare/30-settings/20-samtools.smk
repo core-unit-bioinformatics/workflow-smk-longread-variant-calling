@@ -1,5 +1,5 @@
 ###############################
-### SETTINGS FOR VARIOUS TOOLS
+### SETTINGS FOR SAMTOOLS and MOSDEPTH
 ###############################
 
 # Affects alignment
