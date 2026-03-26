@@ -15,7 +15,7 @@ DEFAULT_ROOT = pl.Path(__file__).resolve().parent.parent
 
 DEFAULT_CONST_MODULE = pl.Path(__file__).parent
 DEFAULT_CONST_MODULE = DEFAULT_CONST_MODULE.joinpath(
-    "workflow", "rules", "commons", "10_constants.smk"
+    "workflow", "rules", "commons", "10-constants", "20_const_structs.smk"
 )
 DEFAULT_CONST_MODULE.resolve(strict=True)
 
@@ -42,7 +42,14 @@ def create_execution_environment(repo_folder, project_folder, conda_env_name):
     """
 
     logger = logging.getLogger(__name__)
-    check_executables = ["mamba", "conda"]
+    # 2025-08-01
+    # change here: recent versions of conda use
+    # libmamba under the hood / rely on faster
+    # re-implementations of the core algorithms,
+    # which is why, e.g., also Snakemake dropped
+    # support for mamba. Prioritize conda here for
+    # the same reason
+    check_executables = ["conda", "mamba"]
     use_executable = None
     for executable in check_executables:
         try:
@@ -74,12 +81,14 @@ def create_execution_environment(repo_folder, project_folder, conda_env_name):
     )
     env_path = project_folder.joinpath(env_prefix)
     logger.debug("Setting up the Conda environment may take a while...")
+    # 2025-08-01
+    # change here: conda v24.11.3 and mamba v1.5.12
+    # no longer support the '--force' option
     call_args = [
         use_executable,
         "env",
         "create",
         "--quiet",
-        "--force",
         "-f",
         str(yaml_file),
         "-p",

@@ -12,7 +12,7 @@ that explains how we help you to keep track of your analysis
 results; we refer to this concept as
 [**"file accounting"**](concepts/accounting.md). This feature
 of standard CUBI workflows enables the pipeline to auto-
-matically create a so-called [**"manifest"** file](concepts/folders.md)
+matically create a so-called [**"manifest"** file](concepts/accounting.md)
 for your analysis run.
 
 In case of questions, please open a GitHub issue in the repository

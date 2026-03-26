@@ -1,6 +1,13 @@
+# Note that the testing module branch
+# is only included if the workflow is
+# executed in testing mode
 include: "rules/commons/00_commons.smk"
-include: "rules/00_modules.smk"
-include: "rules/99_aggregate.smk"
+
+if not RUN_IN_TEST_MODE:
+    include: "rules/00_modules.smk"
+    include: "rules/99_aggregate.smk"
+else:
+    logerr("DEBUG: test run detected - workflow module include skipped")
 
 
 rule run_all:
@@ -28,11 +35,27 @@ rule run_all_no_manifest:
         WORKFLOW_OUTPUT,
 
 
+rule run_tests:
+    input:
+        RUN_CONFIG_RELPATH,
+        COPY_SAMPLE_SHEET_RELPATH,
+        MANIFEST_RELPATH,
+        WORKFLOW_OUTPUT
+
+
+rule run_tests_no_manifest:
+    input:
+        RUN_CONFIG_RELPATH,
+        COPY_SAMPLE_SHEET_RELPATH,
+        WORKFLOW_OUTPUT
+
+
 onsuccess:
     if any([DIR_CLUSTERLOG_OUT.is_dir(), DIR_CLUSTERLOG_ERR.is_dir()]):
         shell(f"rm -rf {DIR_CLUSTERLOG_OUT} && mkdir -p {DIR_CLUSTERLOG_OUT}")
         shell(f"rm -rf {DIR_CLUSTERLOG_ERR} && mkdir -p {DIR_CLUSTERLOG_ERR}")
     shell(f"rm -f {RUN_CONFIG_RELPATH.with_suffix('.bak.yaml')}")
+    shell(f"rm -f {_SMK_CLI_CAPTURE_CACHE_FILE}")
 
 
 onerror:
@@ -43,3 +66,4 @@ onerror:
         # during development
         pass
     shell(f"rm -f {RUN_CONFIG_RELPATH}")
+    shell(f"rm -f {_SMK_CLI_CAPTURE_CACHE_FILE}")

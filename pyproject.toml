@@ -14,9 +14,9 @@ line-length = 88
 profile = "black"
 
 [cubi.workflow.template]
-pid = "undefined"
+pid = "https://github.com/core-unit-bioinformatics/template-snakemake"
 system = "smk"
-version = "1.2.0"
+version = "1.6.0"
 
 [tool.pylint.format]
 max-line-length = "88"
