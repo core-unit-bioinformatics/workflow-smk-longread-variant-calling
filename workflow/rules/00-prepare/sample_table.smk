@@ -339,9 +339,4 @@ def _build_constraint(values):
     constraint = "(" + "|".join(escaped_values) + ")"
     return constraint
 
-
-# Execute immediately (same as original)
-if __name__ == "__main__":
-    process_sample_sheet()
-
-#process_sample_sheet()
+process_sample_sheet()
