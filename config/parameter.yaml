@@ -11,6 +11,7 @@ input_file_ext:
 # genomes to use?
 # reference_genomes:
 #   label: fasta_file_name
+
 reference_genomes:  #test
   mock-ref: /home/sebastian/Data/Git/smk-longread-variant-calling-project/workflow-smk-longread-variant-calling/config/testing/mock_hg38.fa  #test
   
