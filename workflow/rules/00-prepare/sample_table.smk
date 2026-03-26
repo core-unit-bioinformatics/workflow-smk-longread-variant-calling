@@ -27,6 +27,10 @@ PATERNAL_ID_MAP = {}
 
 
 class SampleSheetColumns(Enum):
+    """
+    Enum defining canonical sample sheet column names and their aliases.
+    Provides matching and normalization utilities.
+    """
     SAMPLE = ("sample", ["sample_id", "id", "SampleID", "sampleid", "iid"])
     READ_TYPE = ("read_type", ["rtype", "readtype", "platform", "Platform"])
     INPUT_PATH = ("input_path", ["path", "input", "fastq", "Fastqs", "fastqs", "input.path"])
@@ -34,6 +38,7 @@ class SampleSheetColumns(Enum):
     PATERNAL_ID = ("paternal_id", ["father", "dad", "pat_id", "Pat_ID", "pid"])
 
     def matches(self, colname: str) -> bool:
+        """Return True if a column name matches this field or any alias."""
         colname = colname.lower().strip()
         main, aliases = self.value
         aliases = [a.lower() for a in aliases]
@@ -41,6 +46,7 @@ class SampleSheetColumns(Enum):
 
     @staticmethod
     def _all_aliases():
+        """Return a mapping of canonical column names to their aliases."""
         alias_map = {}
         for field in SampleSheetColumns:
             main, aliases = field.value
@@ -49,6 +55,10 @@ class SampleSheetColumns(Enum):
 
     @staticmethod
     def normalize_columns(df):
+        """
+        Normalize all column names in the sample sheet to canonical names.
+        Raise an error if an unknown column is encountered.
+        """
         rename_map = {}
         for col in df.columns:
             col_clean = col.lower().strip()
@@ -74,6 +84,11 @@ class SampleSheetColumns(Enum):
 
 
 def validate_sample_sheet_columns(df, mode):
+    """
+    Validate that required columns are present depending on mode:
+    - population: sample, read_type, input_path
+    - trio: above + maternal_id, paternal_id
+    """
     required_population = {"sample", "read_type", "input_path"}
     required_trio = required_population.union({"maternal_id", "paternal_id"})
 
@@ -88,6 +103,14 @@ def validate_sample_sheet_columns(df, mode):
         raise ValueError(f"Missing required columns for mode '{mode}': {missing}")
 
 def process_sample_sheet():
+    """
+    Main entry point:
+    - Load and normalize the sample sheet
+    - Validate mode (population/trio)
+    - Build pedigree maps if trio mode
+    - Collect input FASTQ files and hashes
+    - Populate global sample lists and metadata structures
+    """
 
     SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
 
@@ -101,6 +124,7 @@ def process_sample_sheet():
     )
 
     SAMPLE_SHEET = SampleSheetColumns.normalize_columns(SAMPLE_SHEET)
+    # Normalize parental IDs if present
     for col in ["maternal_id", "paternal_id"]:
     	if col in SAMPLE_SHEET.columns:
         	SAMPLE_SHEET[col] = SAMPLE_SHEET[col].fillna("0").astype(str).str.strip()
@@ -184,6 +208,8 @@ def process_sample_sheet():
     global SAMPLES
     SAMPLES = all_samples
 
+    # sample sex strongly suggested for pbcnv/hificnv,
+    # may be used in future updates for DeepVariant as well
     global SAMPLE_SEX
     SAMPLE_SEX = dict()
 
@@ -196,6 +222,7 @@ def process_sample_sheet():
     global CONTROL_SAMPLES
     CONTROL_SAMPLES = set()
 
+    # Assign sample metadata
     for row in SAMPLE_SHEET.itertuples():
         if hasattr(row, "sex"):
             SAMPLE_SEX[row.sample] = row.sex
@@ -245,6 +272,14 @@ def process_sample_sheet():
     return
 
 def collect_input_files(sample_sheet):
+    """
+    For each sample:
+    - Parse input_path entries
+    - Resolve FASTQ files (direct or directory)
+    - Compute SHA256 hashes and short path IDs
+    - Build sample → read_type → file lists
+    - Build global path_id → file metadata map
+    """
 
     sample_input = dict()
     path_input = dict()
@@ -283,15 +318,35 @@ def collect_input_files(sample_sheet):
 
 
 def subset_path(full_path):
+    """This helper exists to reduce
+    the absolute path to a file
+    to just the file name and its
+    parent.
+    TODO: should be codified as part
+    of the template utilities to improve
+    infrastructure portability of active
+    workflows
+    """
     folder_name = full_path.parent.name
     file_name = full_path.name
     subset_path = f"{folder_name}/{file_name}"
+    # if it so happens that the file resides
+    # in a root-level location, strip off
+    # leading slash
     return subset_path.strip("/")
 
 
 def collect_sequence_input(path_spec):
+    """
+    Generic function to collect HiFi or ONT/Nanopore
+    input (read) files
+    """
     input_files = []
     input_hashes = []
+    # for better (human) readability,
+    # shorten the full sha256 hash
+    # to just a prefix of 10 chars
+    # to be used as "path_id"
     path_ids = []
 
     for sub_input in path_spec.split(","):
