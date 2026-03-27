@@ -5,6 +5,7 @@ import hashlib
 import collections
 import re
 
+
 SAMPLES = None
 SAMPLE_SEX = None
 
@@ -54,12 +55,8 @@ class MandatorySampleSheetColumn(enum.Enum):
     
 
 class VariantCallingMode(enum.Enum):
-    """
-    Allowed values for variant calling mode.
-    """
-    population = "population"
-    trio = "trio"
-
+    population = 0
+    trio = 1
 
 def normalize_sample_sheet_columns(df: pandas.DataFrame) -> pandas.DataFrame:
     """
@@ -190,18 +187,23 @@ def process_sample_sheet():
     - Collect input FASTQ files and hashes
     - Populate global sample lists and metadata structures
     """
+
     SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
-    user_mode_str = config.get(
+
+    # Read config value as string; default to Enum name
+    variant_calling_mode = config.get(
         "variant_calling_mode",
-        VariantCallingMode.population.value,
+        VariantCallingMode.population.name,
     )
     try:
-        mode = VariantCallingMode(user_mode_str)
-    except ValueError as exc:
-        raise ValueError(
-            f"Invalid variant_calling_mode '{user_mode_str}'. "
-            f"Allowed values: {[m.value for m in VariantCallingMode]}"
-        ) from exc
+        mode = VariantCallingMode[variant_calling_mode]
+    except KeyError:
+        allowed_modes = [mode_member.name for mode_member in VariantCallingMode]
+        error_message = (
+            f"Invalid variant_calling_mode '{variant_calling_mode}'. "
+            f"Allowed values: {allowed_modes}"
+        )
+        raise ValueError(error_message)
 
     SAMPLE_SHEET = pandas.read_csv(
         SAMPLE_SHEET_FILE,
@@ -209,38 +211,47 @@ def process_sample_sheet():
         header=0,
         comment="#",
     )
-    # Normalize column names
+
+    # Normalize columns
     SAMPLE_SHEET = normalize_sample_sheet_columns(SAMPLE_SHEET)
-    # Normalize parental IDs if present
     SAMPLE_SHEET = normalize_parental_ids(SAMPLE_SHEET)
 
-    has_maternal = MandatorySampleSheetColumn.maternal_id.name in SAMPLE_SHEET.columns
-    has_paternal = MandatorySampleSheetColumn.paternal_id.name in SAMPLE_SHEET.columns
+    # Check for parental columns
+    maternal_col = MandatorySampleSheetColumn.maternal_id.name
+    paternal_col = MandatorySampleSheetColumn.paternal_id.name
 
+    has_maternal = maternal_col in SAMPLE_SHEET.columns
+    has_paternal = paternal_col in SAMPLE_SHEET.columns
+
+    # Only one of the two parental columns present → invalid
     if has_maternal != has_paternal:
-        raise ValueError(
-            "Invalid sample sheet: only one of maternal_id/paternal_id is present.\n"
-            "For variant_calling_mode='trio', provide both maternal_id and paternal_id.\n"
+        error_message = (
+            f"Invalid sample sheet: only one of '{maternal_col}' or '{paternal_col}' "
+            f"is present. For variant_calling_mode='{VariantCallingMode.trio.name}', "
+            f"both columns must be provided."
         )
+        raise ValueError(error_message)
 
-    # If user explicitly requests trio mode but columns are missing -> error
+    # User explicitly requests trio mode but columns missing
     if mode == VariantCallingMode.trio and not (has_maternal and has_paternal):
-        raise ValueError(
-            "Config parameter variant_calling_mode='trio' requires both "
-            "maternal_id and paternal_id columns in the sample sheet."
+        error_message = (
+            f"variant_calling_mode='{mode.name}' requires both "
+            f"'{maternal_col}' and '{paternal_col}' columns in the sample sheet."
         )
+        raise ValueError(error_message)
 
-    # If user is in population mode but trio columns are present -> warn, stay in population
+    # User is in population mode but trio columns are present → warn
     if mode == VariantCallingMode.population and has_maternal and has_paternal:
-        print(
-            "WARNING: maternal_id and paternal_id columns detected in sample sheet, "
-            "but variant_calling_mode='population'. Running in population mode; trio "
-            "information will NOT be used. Set variant_calling_mode='trio' in config "
-            "to enable trio handling."
+        logerr(
+            f"Detected parental columns ('{maternal_col}', '{paternal_col}') in sample sheet, "
+            f"but variant_calling_mode='{mode.name}'. Trio information will be ignored. "
+            f"Set variant_calling_mode='{VariantCallingMode.trio.name}' to enable trio handling."
         )
 
+    # Validate required columns for the selected mode
     validate_sample_sheet_columns(SAMPLE_SHEET, mode)
-    # Trio-specific: build pedigree maps and validate
+
+    # Trio-specific pedigree building
     global MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN
     MATERNAL_ID_MAP = {}
     PATERNAL_ID_MAP = {}
