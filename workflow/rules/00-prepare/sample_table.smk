@@ -1,11 +1,10 @@
+import enum
 import pandas
 import pathlib
 import hashlib
 import collections
 import re
-from enum import Enum
 
-# Global metadata containers used by Snakemake
 SAMPLES = None
 SAMPLE_SEX = None
 
@@ -22,192 +21,235 @@ ONT_INPUT = []
 MAP_SAMPLE_TO_INPUT_FILES = None
 MAP_PATHID_TO_FILE_INFO = None
 
-# Trio-related globals
 MATERNAL_ID_MAP = {}
 PATERNAL_ID_MAP = {}
 TRIO_CHILDREN = []
 
 
-class SampleSheetColumns(Enum):
+class MandatorySampleSheetColumn(enum.Enum):
     """
-    Enum defining canonical sample sheet column names and their aliases.
-    Provides matching and normalization utilities.
+    Canonical sample sheet columns with aliases mapped to the same value.
     """
-    SAMPLE = ("sample", ["sample_id", "id", "SampleID", "sampleid", "iid"])
-    READ_TYPE = ("read_type", ["rtype", "readtype", "platform", "Platform"])
-    INPUT_PATH = ("input_path", ["path", "input", "fastq", "Fastqs", "fastqs", "input.path"])
-    MATERNAL_ID = ("maternal_id", ["mother", "mom", "mat_id", "Mat_ID", "mid"])
-    PATERNAL_ID = ("paternal_id", ["father", "dad", "pat_id", "Pat_ID", "pid"])
+    # sample
+    sample = 0
+    sample_id = 0
+    samples = 0
+    sampleid = 0
+    # read_type
+    read_type = 1
+    readtype = 1
+    platform = 1
+    # input_path
+    input_path = 2
+    input_file = 2
+    fastqs = 2
+    # maternal_id
+    maternal_id = 3
+    mother = 3
+    mat_id = 3
+    # paternal_id
+    paternal_id = 4
+    father = 4
+    pat_id = 4
+    
 
-    def matches(self, colname: str) -> bool:
-        """Return True if a column name matches this field or any alias."""
-        colname = colname.lower().strip()
-        main, aliases = self.value
-        aliases = [a.lower() for a in aliases]
-        return colname == main or colname in aliases
-
-    @staticmethod
-    def _all_aliases():
-        """Return a mapping of canonical column names to their aliases."""
-        alias_map = {}
-        for field in SampleSheetColumns:
-            main, aliases = field.value
-            alias_map[main] = aliases
-        return alias_map
-
-    @staticmethod
-    def normalize_columns(df):
-        """
-        Normalize all column names in the sample sheet to canonical names.
-        Raise an error if an unknown column is encountered.
-        """
-        rename_map = {}
-        for col in df.columns:
-            col_clean = col.lower().strip()
-            matched = False
-
-            for field in SampleSheetColumns:
-                main, aliases = field.value
-                aliases = [a.lower() for a in aliases]
-
-                if col_clean == main or col_clean in aliases:
-                    rename_map[col] = main
-                    matched = True
-                    break
-
-            if not matched:
-                raise ValueError(
-                    f"Unrecognized column name '{col}'.\n"
-                    f"Allowed columns: {[f.value[0] for f in SampleSheetColumns]}\n"
-                    f"Aliases: {SampleSheetColumns._all_aliases()}"
-                )
-
-        return df.rename(columns=rename_map)
+class VariantCallingMode(enum.Enum):
+    """
+    Allowed values for variant calling mode.
+    """
+    population = "population"
+    trio = "trio"
 
 
-def validate_sample_sheet_columns(df, mode):
+def normalize_sample_sheet_columns(df: pandas.DataFrame) -> pandas.DataFrame:
+    """
+    Normalize known column names in the sample sheet to canonical names.
+    """
+    old_columns = df.columns
+    new_columns = []
+
+    for column in old_columns:
+        col_clean = column.strip()
+        col_lower = col_clean.lower()
+        try:
+            mandatory_column = MandatorySampleSheetColumn[col_lower]
+            new_columns.append(mandatory_column.name)
+        except KeyError:
+            new_columns.append(column)
+    df.columns = new_columns
+    return df
+
+
+def normalize_parental_ids(df: pandas.DataFrame) -> pandas.DataFrame:
+    """
+    Normalize parental ID columns if present:
+    - Fill missing values with "0"
+    - Strip whitespace
+    - Convert empty strings to "0"
+    """
+    for col in (
+        MandatorySampleSheetColumn.maternal_id.name,
+        MandatorySampleSheetColumn.paternal_id.name,
+    ):
+        if col in df.columns:
+            df[col] = (
+                df[col]
+                .fillna("0")
+                .astype(str)
+                .str.strip()
+                .replace({"": "0"})
+            )
+    return df
+
+
+def validate_sample_sheet_columns(df: pandas.DataFrame, mode: VariantCallingMode) -> None:
     """
     Validate that required columns are present depending on mode:
     - population: sample, read_type, input_path
     - trio: above + maternal_id, paternal_id
+    Uses Enum members instead of raw string lists.
     """
-    required_population = {"sample", "read_type", "input_path"}
-    required_trio = required_population.union({"maternal_id", "paternal_id"})
-
-    if mode == "population":
+    required_population = {
+        MandatorySampleSheetColumn.sample.name,
+        MandatorySampleSheetColumn.read_type.name,
+        MandatorySampleSheetColumn.input_path.name,
+    }
+    required_trio = required_population.union(
+        {
+            MandatorySampleSheetColumn.maternal_id.name,
+            MandatorySampleSheetColumn.paternal_id.name,
+        }
+    )
+    if mode == VariantCallingMode.population:
         missing = required_population - set(df.columns)
-    elif mode == "trio":
+    elif mode == VariantCallingMode.trio:
         missing = required_trio - set(df.columns)
     else:
-        raise ValueError(f"Unknown mode: {mode}")
+        raise ValueError(f"Unknown variant calling mode: {mode}")
 
     if missing:
-        raise ValueError(f"Missing required columns for mode '{mode}': {missing}")
+        raise ValueError(
+            f"Missing required columns for variant calling mode '{mode.value}': {missing}"
+        )
 
+    return
+
+
+def build_trio_pedigree(sample_sheet: pandas.DataFrame):
+    """
+    Trio-specific:
+    - Build maternal/paternal ID maps
+    - Perform pedigree consistency checks
+    - Return maps and list of trio children
+    """
+    maternal_map = {}
+    paternal_map = {}
+
+    sample_names = set(sample_sheet[MandatorySampleSheetColumn.sample.name])
+
+    for row in sample_sheet.itertuples():
+        sample = row.sample
+        mother = row.maternal_id
+        father = row.paternal_id
+
+        # Rule 1: sample cannot be its own parent
+        if sample == mother or sample == father:
+            raise ValueError(f"Sample '{sample}' cannot be its own parent")
+
+        # Rule 2: if a parent is non-zero, it must exist as a sample
+        if mother != "0" and mother not in sample_names:
+            raise ValueError(
+                f"maternal_id '{mother}' for sample '{sample}' "
+                "is not present as a sample in the sheet."
+            )
+
+        if father != "0" and father not in sample_names:
+            raise ValueError(
+                f"paternal_id '{father}' for sample '{sample}' "
+                "is not present as a sample in the sheet."
+            )
+
+        maternal_map[sample] = mother
+        paternal_map[sample] = father
+
+    trio_children = [
+        sample
+        for sample in sample_names
+        if maternal_map.get(sample, "0") != "0"
+        or paternal_map.get(sample, "0") != "0"
+    ]
+
+    return maternal_map, paternal_map, trio_children
 
 def process_sample_sheet():
     """
     Main entry point:
     - Load and normalize the sample sheet
-    - Validate mode (population/trio)
+    - Determine variant calling mode (population/trio)
     - Build pedigree maps if trio mode
     - Collect input FASTQ files and hashes
     - Populate global sample lists and metadata structures
     """
-
     SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
-    user_mode = config.get("mode", "population")
+    user_mode_str = config.get(
+        "variant_calling_mode",
+        VariantCallingMode.population.value,
+    )
+    try:
+        mode = VariantCallingMode(user_mode_str)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid variant_calling_mode '{user_mode_str}'. "
+            f"Allowed values: {[m.value for m in VariantCallingMode]}"
+        ) from exc
 
     SAMPLE_SHEET = pandas.read_csv(
         SAMPLE_SHEET_FILE,
         sep="\t",
         header=0,
-        comment="#"
+        comment="#",
     )
-
     # Normalize column names
-    SAMPLE_SHEET = SampleSheetColumns.normalize_columns(SAMPLE_SHEET)
-
+    SAMPLE_SHEET = normalize_sample_sheet_columns(SAMPLE_SHEET)
     # Normalize parental IDs if present
-    for col in ["maternal_id", "paternal_id"]:
-        if col in SAMPLE_SHEET.columns:
-            SAMPLE_SHEET[col] = (
-                SAMPLE_SHEET[col]
-                .fillna("0")
-                .astype(str)
-                .str.strip()
-            )
+    SAMPLE_SHEET = normalize_parental_ids(SAMPLE_SHEET)
 
-    has_maternal = "maternal_id" in SAMPLE_SHEET.columns
-    has_paternal = "paternal_id" in SAMPLE_SHEET.columns
+    has_maternal = MandatorySampleSheetColumn.maternal_id.name in SAMPLE_SHEET.columns
+    has_paternal = MandatorySampleSheetColumn.paternal_id.name in SAMPLE_SHEET.columns
 
     if has_maternal != has_paternal:
         raise ValueError(
             "Invalid sample sheet: only one of maternal_id/paternal_id is present.\n"
-            "Provide both for trio mode or neither for population mode."
+            "For variant_calling_mode='trio', provide both maternal_id and paternal_id.\n"
         )
 
     # If user explicitly requests trio mode but columns are missing -> error
-    if user_mode == "trio" and not (has_maternal and has_paternal):
+    if mode == VariantCallingMode.trio and not (has_maternal and has_paternal):
         raise ValueError(
-            "Config mode='trio' but sample sheet does not contain both "
-            "maternal_id and paternal_id columns."
+            "Config parameter variant_calling_mode='trio' requires both "
+            "maternal_id and paternal_id columns in the sample sheet."
         )
 
     # If user is in population mode but trio columns are present -> warn, stay in population
-    if user_mode == "population" and has_maternal and has_paternal:
+    if mode == VariantCallingMode.population and has_maternal and has_paternal:
         print(
             "WARNING: maternal_id and paternal_id columns detected in sample sheet, "
-            "but mode='population'. Running in population mode; trio information will "
-            "NOT be used. Set mode='trio' in config to enable trio handling."
+            "but variant_calling_mode='population'. Running in population mode; trio "
+            "information will NOT be used. Set variant_calling_mode='trio' in config "
+            "to enable trio handling."
         )
 
-    mode = user_mode
     validate_sample_sheet_columns(SAMPLE_SHEET, mode)
-
     # Trio-specific: build pedigree maps and validate
-    if mode == "trio":
-        global MATERNAL_ID_MAP, PATERNAL_ID_MAP
-        MATERNAL_ID_MAP = {}
-        PATERNAL_ID_MAP = {}
+    global MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN
+    MATERNAL_ID_MAP = {}
+    PATERNAL_ID_MAP = {}
+    TRIO_CHILDREN = []
 
-        # First pass: build maps and ensure non-empty
-        for row in SAMPLE_SHEET.itertuples():
-            if row.maternal_id in ["", None]:
-                raise ValueError(f"Missing maternal_id for sample {row.sample}")
-            if row.paternal_id in ["", None]:
-                raise ValueError(f"Missing paternal_id for sample {row.sample}")
-
-            MATERNAL_ID_MAP[row.sample] = row.maternal_id
-            PATERNAL_ID_MAP[row.sample] = row.paternal_id
-
-        sample_names = set(SAMPLE_SHEET["sample"])
-
-        # Second pass: pedigree consistency checks
-        for sample, mother in MATERNAL_ID_MAP.items():
-            father = PATERNAL_ID_MAP[sample]
-
-            # Rule 1: sample cannot be its own parent
-            if sample == mother or sample == father:
-                raise ValueError(f"Sample '{sample}' cannot be its own parent")
-
-            mother_is_zero = (mother == "0")
-            father_is_zero = (father == "0")
-
-            # Rule 2: parents must be 0/0 (founder), 0/X (duo), or X/X (trio)
-            # All three are allowed
-            # BUT: if a parent is non-zero, it must exist as a sample
-            if not mother_is_zero and mother not in sample_names:
-                raise ValueError(
-                    f"maternal_id '{mother}' for sample '{sample}' "
-                    "is not present as a sample in the sheet."
-                )
-
-            if not father_is_zero and father not in sample_names:
-                raise ValueError(
-                    f"paternal_id '{father}' for sample '{sample}' "
-                    "is not present as a sample in the sheet."
-                )
+    if mode == VariantCallingMode.trio:
+        MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN = build_trio_pedigree(
+            SAMPLE_SHEET
+        )
 
     # Collect input files and hashes
     sample_input, path_input = collect_input_files(SAMPLE_SHEET)
@@ -230,13 +272,13 @@ def process_sample_sheet():
     global CONTROL_SAMPLES
     CONTROL_SAMPLES = set()
 
-    # Assign sample metadata
     for row in SAMPLE_SHEET.itertuples():
         if hasattr(row, "sex"):
             SAMPLE_SEX[row.sample] = row.sex
         else:
             SAMPLE_SEX[row.sample] = "any"
 
+        # TODO fix via sample sheet normalizing script
         if hasattr(row, "sample_type"):
             sample_type = row.sample_type
         else:
@@ -256,7 +298,8 @@ def process_sample_sheet():
             elif sample_group == "case":
                 CASE_GROUPS["all"].add(row.sample)
                 if hasattr(row, "group_label"):
-                    CASE_GROUPS[row.group_label].add(row.sample)
+                    group_label = row.group_label
+                    CASE_GROUPS[group_label].add(row.sample)
             else:
                 raise ValueError(f"Unknown sample group value: {row}")
 
@@ -277,19 +320,11 @@ def process_sample_sheet():
         if len(sample_info["ont"]["paths"]) > 0:
             ONT_SAMPLES.append(sample)
 
-    # Trio children list (only meaningful in trio mode, but harmless otherwise)
-    global TRIO_CHILDREN
-    TRIO_CHILDREN = [
-        sample for sample in SAMPLES
-        if MATERNAL_ID_MAP.get(sample, "0") != "0"
-        or PATERNAL_ID_MAP.get(sample, "0") != "0"
-    ]
-
     return
 
 
 def collect_input_files(sample_sheet):
-  
+
     sample_input = dict()
     path_input = dict()
 
@@ -300,7 +335,7 @@ def collect_input_files(sample_sheet):
                     "paths": [],
                     "path_hashes": [],
                     "path_ids": []
-                }) for rt in ReadTypes]
+                    }) for rt in ReadTypes]
             )
             sample_input[row.sample] = sample_info
 
@@ -309,7 +344,6 @@ def collect_input_files(sample_sheet):
         sample_input[row.sample][read_type]["paths"].extend(input_files)
         sample_input[row.sample][read_type]["path_hashes"].extend(input_hashes)
         sample_input[row.sample][read_type]["path_ids"].extend(path_ids)
-
         for path, full_hash, path_id in zip(input_files, input_hashes, path_ids):
             # TODO
             # ASM
@@ -362,7 +396,6 @@ def collect_sequence_input(path_spec):
     # to just a prefix of 10 chars
     # to be used as "path_id"
     path_ids = []
-
     for sub_input in path_spec.split(","):
         input_path = pathlib.Path(sub_input).resolve(strict=True)
         if input_path.is_file():
@@ -373,7 +406,6 @@ def collect_sequence_input(path_spec):
             input_files.append(input_path)
             input_hashes.append(input_hash)
             path_ids.append(input_hash[:10])
-
         elif input_path.is_dir():
             collected_files = _collect_files(input_path)
             collected_hashes = [
@@ -381,11 +413,12 @@ def collect_sequence_input(path_spec):
                     subset_path(f).encode("utf-8")
                 ).hexdigest() for f in collected_files
             ]
-            collected_path_ids = [h[:10] for h in collected_hashes]
+            collected_path_ids = [
+                full_hash[:10] for full_hash in collected_hashes
+            ]
             input_files.extend(collected_files)
             input_hashes.extend(collected_hashes)
             path_ids.extend(collected_path_ids)
-
         else:
             raise ValueError(f"Cannot handle input: {sub_input}")
 
@@ -393,6 +426,7 @@ def collect_sequence_input(path_spec):
 
 
 def _collect_files(folder):
+
     all_files = set()
     for pattern in config["input_file_ext"]:
         pattern_files = set(folder.glob(f"**/*.{pattern}"))
@@ -410,4 +444,3 @@ def _build_constraint(values):
 
 
 process_sample_sheet()
-
