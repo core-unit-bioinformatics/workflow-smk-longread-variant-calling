@@ -63,7 +63,7 @@ if SAMPLE_PAIRS is not None:
 
     if any("sniffles" in toolchain_wildcard for toolchain_wildcard in RUN_HIFI_SV_CALLING_TOOLCHAIN):
 
-        # this can only work for callers that can report reads --- not pbsv, for example
+        # this can only work for callers that can report reads
 
         rule extract_structural_variant_reads:
             input:

@@ -81,8 +81,8 @@ rule combine_consensus_haplotypes:
 
 rule decompress_prg_fasta_file:
     """This rule only exists to accommodate
-    tools such as pbsv that cannot deal with
-    modern file formats such as gzipped FASTA
+    tools that cannot deal with modern
+    file formats such as gzipped FASTA
     files ... just overhead ...
     """
     input:

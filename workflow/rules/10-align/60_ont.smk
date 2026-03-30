@@ -2,7 +2,7 @@ rule align_minimap2_ont:
     """
     -a: output in SAM
     --eqx: write =/X CIGAR operators
-    -Y: use soft-clipping for suppl. alns (mandatory for pbsv)
+    -Y: use soft-clipping for suppl. alns
     --MD: output MD tag
     (SAMspecs: String encoding mismatched and deleted reference bases)
     -N 1: keep at most 1 secondary alignment

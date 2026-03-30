@@ -166,11 +166,3 @@ if _user_roi_config is not None:
         _user_roi_config, USE_REF_GENOMES
     )
 
-
-###########################################
-### SETTINGS FOR PBSV ONLY
-###########################################
-
-#RUN_PBSV_MULTISAMPLE_MODE = config.get("run_pbsv_multisample_mode", False)
-#assert isinstance(RUN_PBSV_MULTISAMPLE_MODE, bool)
-#PBSV_MULTISAMPLE_SETS = config.get("pbsv_multisample_sets", dict())
