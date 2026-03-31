@@ -1,4 +1,3 @@
-
 rule short_call_deepvariant_hifi:
     input:
         ref = lambda wildcards: REF_GENOMES[wildcards.ref],
@@ -31,6 +30,9 @@ rule short_call_deepvariant_hifi:
         ),
         model = lambda wildcards: config["deepvariant_models"][wildcards.read_type]
     shell:
+        if config["variant_calling_mode"] == "trio" and wildcards.sample in TRIO_CHILDREN:
+            shell("touch {output.vcfgz}")
+            return
         "rm -rf {params.tempdir}"
             " && "
         "mkdir -p {params.tempdir}"
@@ -43,6 +45,94 @@ rule short_call_deepvariant_hifi:
             " ; "
         "rm -rfd {params.tempdir}"
 
+
+rule short_call_deeptrio:
+    input:
+        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+        child_bam = rules.split_merged_alignments.output.main,
+        child_bai = rules.split_merged_alignments.output.main_bai,
+        mother_bam = lambda wildcards: rules.split_merged_alignments.output.main.format(
+            sample=MATERNAL_ID_MAP[wildcards.sample],
+            read_type=wildcards.read_type,
+            aligner=wildcards.aligner,
+            ref=wildcards.ref
+        ),
+        mother_bai = lambda wildcards: rules.split_merged_alignments.output.main_bai.format(
+            sample=MATERNAL_ID_MAP[wildcards.sample],
+            read_type=wildcards.read_type,
+            aligner=wildcards.aligner,
+            ref=wildcards.ref
+        ),
+        father_bam = lambda wildcards: rules.split_merged_alignments.output.main.format(
+            sample=PATERNAL_ID_MAP[wildcards.sample],
+            read_type=wildcards.read_type,
+            aligner=wildcards.aligner,
+            ref=wildcards.ref
+        ),
+        father_bai = lambda wildcards: rules.split_merged_alignments.output.main_bai.format(
+            sample=PATERNAL_ID_MAP[wildcards.sample],
+            read_type=wildcards.read_type,
+            aligner=wildcards.aligner,
+            ref=wildcards.ref
+        )
+    output:
+        gvcf_child  = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"
+        ),
+        gvcf_mother = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"
+        ),
+        gvcf_father = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
+        )
+    log:
+        DIR_LOG.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.{ref}.{chrom}.log"
+        )
+    container:
+        f"{config['container_store']}/{config['deeptrio_container']}"
+    threads: CPU_LOW
+    resources:
+        mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt**2,
+        arch=":arch=skylake"
+    params:
+        tempdir = lambda wildcards: DIR_PROC.joinpath(
+            "temp", "deeptrio", wildcards.ref,
+            wildcards.sample, wildcards.read_type, wildcards.aligner, wildcards.chrom
+        ),
+        model = lambda wildcards: config["deeptrio_models"][wildcards.read_type],
+        child_name = lambda wildcards: wildcards.sample,
+        mother_name = lambda wildcards: MATERNAL_ID_MAP[wildcards.sample],
+        father_name = lambda wildcards: PATERNAL_ID_MAP[wildcards.sample]
+    shell:
+        "rm -rf {params.tempdir}"
+        " && "
+        "mkdir -p {params.tempdir}"
+        " && "
+        "/opt/deepvariant/bin/deeptrio/run_deeptrio "
+        "--model_type {params.model} "
+        "--ref {input.ref} "
+        "--reads_child {input.child_bam} "
+        "--reads_parent1 {input.mother_bam} "
+        "--reads_parent2 {input.father_bam} "
+        "--output_gvcf_child {output.gvcf_child} "
+        "--output_gvcf_parent1 {output.gvcf_mother} "
+        "--output_gvcf_parent2 {output.gvcf_father} "
+        "--sample_name_child {params.child_name} "
+        "--sample_name_parent1 {params.mother_name} "
+        "--sample_name_parent2 {params.father_name} "
+        "--regions {wildcards.chrom} "
+        "--num_shards {threads} "
+        "--intermediate_results_dir {params.tempdir} "
+        "&> {log}"
+        " ; "
+        "rm -rfd {params.tempdir}"
 
 rule run_deepvariant_hifi_calling:
     """TODO - the way the chromosomes
@@ -58,3 +148,31 @@ rule run_deepvariant_hifi_calling:
             ref=USE_REF_GENOMES,
             chrom=CHROMOSOMES
         )
+
+if config["variant_calling_mode"] == "trio":
+    rule run_deeptrio_hifi_calling:
+        input:
+            expand(
+                rules.short_call_deeptrio.output.gvcf_child,
+                sample=TRIO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES
+            ),
+            expand(
+                rules.short_call_deeptrio.output.gvcf_mother,
+                sample=TRIO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES
+            ),
+            expand(
+                rules.short_call_deeptrio.output.gvcf_father,
+                sample=TRIO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES
+            )

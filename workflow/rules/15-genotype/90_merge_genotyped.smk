@@ -140,6 +140,42 @@ rule concat_region_sample_genotypes:
         "tabix -p vcf --threads {threads} {output.vcf}"
 
 
+if config["variant_calling_mode"] == "trio":
+
+    rule glnexus_trio_joint:
+        input:
+            gvcf_child = DIR_PROC.joinpath(
+                "30-callshort", "trio",
+                "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"
+            ),
+            gvcf_mother = DIR_PROC.joinpath(
+                "30-callshort", "trio",
+                "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"
+            ),
+            gvcf_father = DIR_PROC.joinpath(
+                "30-callshort", "trio",
+                "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
+            )
+        output:
+            vcfgz = DIR_PROC.joinpath(
+                "15-genotype", "trio_joint",
+                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
+            )
+        log:
+            DIR_LOG.joinpath(
+                "15-genotype", "trio_joint",
+                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
+            )
+        container:
+            f"{config['container_store']}/{config['glnexus_container']}"
+        threads: CPU_LOW
+        shell:
+            "glnexus_cli --config {config[glnexus_preset]} "
+            "{input.gvcf_child} {input.gvcf_mother} {input.gvcf_father} "
+            " | bcftools view -Oz -o {output.vcfgz} "
+            " &> {log}"
+
+
 if SAMPLE_PAIRS is not None:
 
     rule run_all_merge_genotypes:
@@ -158,3 +194,13 @@ if SAMPLE_PAIRS is not None:
                 panel=["hgsvc3hprc"],
                 allele_repr=["malc", "balc"]
             ),
+
+if config["variant_calling_mode"] == "trio":
+    TRIO_JOINT_OUTPUT = expand(
+        rules.glnexus_trio_joint.output.vcfgz,
+        sample=TRIO_CHILDREN,
+        read_type=["hifi"], 
+        aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+        ref=USE_REF_GENOMES,
+        chrom=CHROMOSOMES
+    )

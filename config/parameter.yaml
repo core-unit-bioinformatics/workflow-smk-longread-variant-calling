@@ -14,6 +14,10 @@ input_file_ext:
 
 reference_genomes:  #test
   mock-ref: mock_hg38.fa  #test
+
+# population → Everything
+# trio        → DeepTrio + GLnexus, plus full population pipeline
+variant_calling_mode: population   # or "trio"
   
 ######################################
 ### GENERAL ALIGNER RUNTIME PARAMETERS
@@ -97,6 +101,15 @@ deepvariant_models:
   ont: ONT_R104
 
 container_store: mock_deepvariant_1.6.0_container.cont  #test
+
+deeptrio_container: mock_deeptrio_1.6.0_container.cont
+deeptrio_models:
+  hifi: PACBIO
+  ont: ONT_R104
+
+
+glnexus_container: mock_glnexus_1.4.1_container.cont
+glnexus_preset: deepvariant_unfiltered
 
 # This is used to split the potentially
 # large short variant callsets
