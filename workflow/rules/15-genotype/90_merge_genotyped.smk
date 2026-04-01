@@ -166,11 +166,14 @@ if config["variant_calling_mode"] == "trio":
                 "15-genotype", "trio_joint",
                 "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
             )
+        params:
+            glnexus_config = config["glnexus_preset"]
         container:
             f"{config['container_store']}/{config['glnexus_container']}"
         threads: CPU_LOW
         shell:
-            "glnexus_cli --config {config[glnexus_preset]} "
+            "glnexus_cli --config {params.glnexus_config} "
+            "--threads {threads} "
             "{input.gvcf_child} {input.gvcf_mother} {input.gvcf_father} "
             " | bcftools view -Oz -o {output.vcfgz} "
             " &> {log}"

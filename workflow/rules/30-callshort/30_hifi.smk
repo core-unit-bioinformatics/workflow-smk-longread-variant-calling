@@ -30,9 +30,6 @@ rule short_call_deepvariant_hifi:
         ),
         model = lambda wildcards: config["deepvariant_models"][wildcards.read_type]
     shell:
-        if config["variant_calling_mode"] == "trio" and wildcards.sample in TRIO_CHILDREN:
-            shell("touch {output.vcfgz}")
-            return
         "rm -rf {params.tempdir}"
             " && "
         "mkdir -p {params.tempdir}"
@@ -52,29 +49,37 @@ rule short_call_deeptrio:
         ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
         child_bam = rules.split_merged_alignments.output.main,
         child_bai = rules.split_merged_alignments.output.main_bai,
-        mother_bam = lambda wildcards: rules.split_merged_alignments.output.main.format(
+        mother_bam = lambda wildcards: expand(
+            rules.split_merged_alignments.output.main,
             sample=MATERNAL_ID_MAP[wildcards.sample],
             read_type=wildcards.read_type,
             aligner=wildcards.aligner,
-            ref=wildcards.ref
+            ref=wildcards.ref,
+            allow_missing=True
         ),
-        mother_bai = lambda wildcards: rules.split_merged_alignments.output.main_bai.format(
+        mother_bai = lambda wildcards: expand(
+            rules.split_merged_alignments.output.main_bai,
             sample=MATERNAL_ID_MAP[wildcards.sample],
             read_type=wildcards.read_type,
             aligner=wildcards.aligner,
-            ref=wildcards.ref
+            ref=wildcards.ref,
+            allow_missing=True
         ),
-        father_bam = lambda wildcards: rules.split_merged_alignments.output.main.format(
+        father_bam = lambda wildcards: expand(
+            rules.split_merged_alignments.output.main,
             sample=PATERNAL_ID_MAP[wildcards.sample],
             read_type=wildcards.read_type,
             aligner=wildcards.aligner,
-            ref=wildcards.ref
+            ref=wildcards.ref,
+            allow_missing=True
         ),
-        father_bai = lambda wildcards: rules.split_merged_alignments.output.main_bai.format(
+        father_bai = lambda wildcards: expand(
+            rules.split_merged_alignments.output.main_bai,
             sample=PATERNAL_ID_MAP[wildcards.sample],
             read_type=wildcards.read_type,
             aligner=wildcards.aligner,
-            ref=wildcards.ref
+            ref=wildcards.ref,
+            allow_missing=True
         )
     output:
         gvcf_child  = DIR_PROC.joinpath(
@@ -152,7 +157,7 @@ rule run_deepvariant_hifi_calling:
 if config["variant_calling_mode"] == "trio":
     rule run_deeptrio_hifi_calling:
         input:
-            expand(
+            gvcf_child = expand(
                 rules.short_call_deeptrio.output.gvcf_child,
                 sample=TRIO_CHILDREN,
                 read_type=["hifi"],
@@ -160,7 +165,7 @@ if config["variant_calling_mode"] == "trio":
                 ref=USE_REF_GENOMES,
                 chrom=CHROMOSOMES
             ),
-            expand(
+            gvcf_mother = expand(
                 rules.short_call_deeptrio.output.gvcf_mother,
                 sample=TRIO_CHILDREN,
                 read_type=["hifi"],
@@ -168,7 +173,7 @@ if config["variant_calling_mode"] == "trio":
                 ref=USE_REF_GENOMES,
                 chrom=CHROMOSOMES
             ),
-            expand(
+            gvcf_father = expand(
                 rules.short_call_deeptrio.output.gvcf_father,
                 sample=TRIO_CHILDREN,
                 read_type=["hifi"],
