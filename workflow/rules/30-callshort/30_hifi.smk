@@ -52,33 +52,21 @@ rule short_call_deeptrio:
         mother_bam = lambda wildcards: expand(
             rules.split_merged_alignments.output.main,
             sample=MATERNAL_ID_MAP[wildcards.sample],
-            read_type=wildcards.read_type,
-            aligner=wildcards.aligner,
-            ref=wildcards.ref,
             allow_missing=True
         ),
         mother_bai = lambda wildcards: expand(
             rules.split_merged_alignments.output.main_bai,
             sample=MATERNAL_ID_MAP[wildcards.sample],
-            read_type=wildcards.read_type,
-            aligner=wildcards.aligner,
-            ref=wildcards.ref,
             allow_missing=True
         ),
         father_bam = lambda wildcards: expand(
             rules.split_merged_alignments.output.main,
             sample=PATERNAL_ID_MAP[wildcards.sample],
-            read_type=wildcards.read_type,
-            aligner=wildcards.aligner,
-            ref=wildcards.ref,
             allow_missing=True
         ),
         father_bai = lambda wildcards: expand(
             rules.split_merged_alignments.output.main_bai,
             sample=PATERNAL_ID_MAP[wildcards.sample],
-            read_type=wildcards.read_type,
-            aligner=wildcards.aligner,
-            ref=wildcards.ref,
             allow_missing=True
         )
     output:
@@ -93,6 +81,18 @@ rule short_call_deeptrio:
         gvcf_father = DIR_PROC.joinpath(
             "30-callshort", "trio",
             "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
+        ),
+        vcf_child  = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.vcf.gz"
+        ),
+        vcf_mother = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.vcf.gz"
+        ),
+        vcf_father = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.vcf.gz"
         )
     log:
         DIR_LOG.joinpath(
@@ -126,6 +126,9 @@ rule short_call_deeptrio:
         "--reads_child {input.child_bam} "
         "--reads_parent1 {input.mother_bam} "
         "--reads_parent2 {input.father_bam} "
+        "--output_vcf_child {output.vcf_child} "
+        "--output_vcf_parent1 {output.vcf_mother} "
+        "--output_vcf_parent2 {output.vcf_father} "
         "--output_gvcf_child {output.gvcf_child} "
         "--output_gvcf_parent1 {output.gvcf_mother} "
         "--output_gvcf_parent2 {output.gvcf_father} "
@@ -175,6 +178,30 @@ if config["variant_calling_mode"] == "trio":
             ),
             gvcf_father = expand(
                 rules.short_call_deeptrio.output.gvcf_father,
+                sample=TRIO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES
+            )
+            vcf_child = expand(
+                rules.short_call_deeptrio.output.vcf_child,
+                sample=TRIO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES
+            ),
+            vcf_mother = expand(
+                rules.short_call_deeptrio.output.vcf_mother,
+                sample=TRIO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES
+            ),
+            vcf_father = expand(
+                rules.short_call_deeptrio.output.vcf_father,
                 sample=TRIO_CHILDREN,
                 read_type=["hifi"],
                 aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],

@@ -105,7 +105,7 @@ container_store: mock_deepvariant_1.6.0_container.cont  #test
 deeptrio_container: mock_deeptrio_1.6.0_container.cont
 deeptrio_models:
   hifi: PACBIO
-  ont: ONT_R104
+  ont: ONT
 
 
 glnexus_container: mock_glnexus_1.4.1_container.cont
