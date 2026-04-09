@@ -1,0 +1,3 @@
+# replace mock file with real container
+# built date: 13-Feb-2025
+# apptainer pull --name glnexus_v1.4.1.sif https://depot.galaxyproject.org/singularity/glnexus%3A1.4.1--h17e8430_5

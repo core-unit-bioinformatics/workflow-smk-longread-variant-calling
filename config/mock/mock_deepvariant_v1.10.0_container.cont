@@ -1,0 +1,5 @@
+# replace mock file with real container
+# GPU version (recommended):
+# apptainer pull --name deepvariant_v1.10.0-gpu.sif docker://google/deepvariant:1.10.0-gpu
+# CPU version:
+# apptainer pull --name deepvariant_v1.10.0-cpu.sif docker://google/deepvariant:1.10.0
