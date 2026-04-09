@@ -1,4 +1,37 @@
+# === DOCS
+# For the time being, ignore these settings.
+# NB: the 'reference_container_store' variable should
+# typically be set in some environment-specific
+# configuration file (YAML)
+# ===
+# use_reference_container: False
+# reference_container_store: "."
+# reference_container_names:
+#   - test_v1
 
+# === DOCS
+# this path can point to a resource such as a directory
+# on the local file system or some remote location that
+# enables Snakemake to find the Singularity/Apptainer
+# containers used in this workflow. If not specified,
+# this is set to the Snakemake working directory.
+# NB: the 'container_store' variable should typically
+# be set in some environment-specific configuration file (YAML)
+# ===
+# container_store: "."
+
+
+# Set in project-specific
+# config - which reference
+# genomes should be used.
+# reference_genomes:
+#   label: fasta_file_name
+reference_genomes:
+  hg38: mock_hg38.fa
+
+# if the sample sheet does not list paths to
+# individual files per sample, specify which
+# file extension to collect from directories
 input_file_ext:
   - fastq.gz
   - fasta.gz
@@ -6,19 +39,11 @@ input_file_ext:
   - fa.gz
   - fna.gz
 
-# Set in project-specific
-# config - which reference
-# genomes to use?
-# reference_genomes:
-#   label: fasta_file_name
+# valid calling modes:
+# 1. population: jointly process samples but ignore potential kinship information
+# 2. trio: as above plus run DeepTrio for family samples (at least duos)
+variant_calling_mode: trio
 
-reference_genomes:  #test
-  mock-ref: mock_hg38.fa  #test
-
-# population → Everything
-# trio        → DeepTrio + GLnexus, plus full population pipeline
-variant_calling_mode: population   # or "trio"
-  
 ######################################
 ### GENERAL ALIGNER RUNTIME PARAMETERS
 ######################################
@@ -44,12 +69,14 @@ run_ont_aligner:
 
 run_hifi_sv_toolchain:
   - minimap2, sniffles
-  # - minimap2, pbsv
-  # - minimap2, cuteSV
 
-run_hifi_cnv_toolchain:
-  - minimap2, hificnv
+# TODO
+# this needs a workaround for the noise annotation files
+# run_hifi_cnv_toolchain:
+#   - minimap2, hificnv
 
+# see note about variant calling mode;
+# DeepTrio will be used in case of mode 'trio'
 run_hifi_short_toolchain:
   - minimap2, DeepVariant
 
@@ -94,21 +121,25 @@ mosdepth_min_mapq: [0, 20]
 ### PARAMETERS FOR SHORT VARIANT CALLING
 
 # only v1.5.0+ supports low-error
-# ONT reads (>=10.4)
-deepvariant: mock_deepvariant_1.6.0_container.cont  #test
+# ONT reads (>= R10.4)
+# latest test with DeepVariant v1.10.0
+# > replace mock container name w/ actual name
+deepvariant: mock_deepvariant_v1.10.0_container.cont
 deepvariant_models:
   hifi: PACBIO
   ont: ONT_R104
 
-container_store: mock_deepvariant_1.6.0_container.cont  #test
-
-deeptrio_container: mock_deeptrio_1.6.0_container.cont
+# latest test with DeepVariant/DeepTrio v1.10.0
+# NB: the model name for ONT reads in DeepTrio
+# is just 'ONT' and not 'ONT_R104' (see above)
+# > replace mock container name w/ actual name
+deeptrio: mock_deeptrio_v1.10.0_container.cont
 deeptrio_models:
   hifi: PACBIO
   ont: ONT
 
-
-glnexus_container: mock_glnexus_1.4.1_container.cont
+# > replace mock container name w/ actual name
+glnexus: mock_glnexus_v1.4.1_container.cont
 glnexus_preset: deepvariant_unfiltered
 
 # This is used to split the potentially
