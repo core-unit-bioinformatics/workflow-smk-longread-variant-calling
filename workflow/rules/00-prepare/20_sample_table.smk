@@ -52,7 +52,7 @@ class MandatorySampleSheetColumn(enum.Enum):
     paternal_id = 4
     father = 4
     pat_id = 4
-    
+
 
 class VariantCallingMode(enum.Enum):
     population = 0
