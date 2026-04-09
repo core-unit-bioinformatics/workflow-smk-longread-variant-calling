@@ -166,13 +166,14 @@ if config["variant_calling_mode"] == "trio":
                 "15-genotype", "trio_joint",
                 "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
             )
-        params:
-            glnexus_config = config["glnexus_preset"]
+
         container:
-            f"{config['container_store']}/{config['glnexus_container']}"
+            f"{CONTAINER_STORE}/{config['glnexus']}"
         threads: CPU_LOW
+        params:
+            glnexus_preset = config["glnexus_preset"]
         shell:
-            "glnexus_cli --config {params.glnexus_config} "
+            "glnexus_cli --config {params.glnexus_preset} "
             "--threads {threads} "
             "{input.gvcf_child} {input.gvcf_mother} {input.gvcf_father} "
             " | bcftools view -Oz -o {output.vcfgz} "
@@ -202,7 +203,7 @@ if config["variant_calling_mode"] == "trio":
     TRIO_JOINT_OUTPUT = expand(
         rules.glnexus_trio_joint.output.vcfgz,
         sample=TRIO_CHILDREN,
-        read_type=["hifi"], 
+        read_type=["hifi"],
         aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
         ref=USE_REF_GENOMES,
         chrom=CHROMOSOMES
