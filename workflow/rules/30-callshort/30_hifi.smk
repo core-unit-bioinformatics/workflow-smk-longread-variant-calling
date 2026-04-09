@@ -17,7 +17,7 @@ rule short_call_deepvariant_hifi:
             "30-callshort", "{sample}_{read_type}.{aligner}-deepvar.{ref}.{chrom}.log"
         )
     container:
-        f"{config['container_store']}/{config['deepvariant']}"
+        f"{CONTAINER_STORE}/{config['deepvariant']}"
     threads: CPU_LOW
     resources:
         mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
@@ -100,7 +100,7 @@ rule short_call_deeptrio:
             "{sample}_{read_type}.{aligner}-deeptrio.{ref}.{chrom}.log"
         )
     container:
-        f"{config['container_store']}/{config['deeptrio_container']}"
+        f"{CONTAINER_STORE}/{config['deeptrio']}"
     threads: CPU_LOW
     resources:
         mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
@@ -183,7 +183,7 @@ if config["variant_calling_mode"] == "trio":
                 aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
                 ref=USE_REF_GENOMES,
                 chrom=CHROMOSOMES
-            )
+            ),
             vcf_child = expand(
                 rules.short_call_deeptrio.output.vcf_child,
                 sample=TRIO_CHILDREN,
