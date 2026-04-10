@@ -169,11 +169,16 @@ def build_trio_pedigree(sample_sheet: pandas.DataFrame):
         maternal_map[sample] = mother
         paternal_map[sample] = father
 
+    # critical piece of logic here
+    # the 'or' makes this a "trio or duo" query;
+    # changing to "and" to make this "trio" only
+    # until the code path for duo support has
+    # been implemented
     trio_children = [
         sample
         for sample in sample_names
         if maternal_map.get(sample, "0") != "0"
-        or paternal_map.get(sample, "0") != "0"
+        and paternal_map.get(sample, "0") != "0"
     ]
 
     return maternal_map, paternal_map, trio_children

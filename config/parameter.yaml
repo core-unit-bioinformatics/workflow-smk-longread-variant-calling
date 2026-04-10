@@ -72,8 +72,8 @@ run_hifi_sv_toolchain:
 
 # TODO
 # this needs a workaround for the noise annotation files
-# run_hifi_cnv_toolchain:
-#   - minimap2, hificnv
+run_hifi_cnv_toolchain:
+  - minimap2, hificnv
 
 # see note about variant calling mode;
 # DeepTrio will be used in case of mode 'trio'
