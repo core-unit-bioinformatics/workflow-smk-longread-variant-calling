@@ -11,8 +11,14 @@ HIFI_CNV_CALLER_NAME_MAPPING = {
 }
 
 RUN_HIFI_CNV_CALLING_TOOLCHAIN = config.get("run_hifi_cnv_toolchain", [])
+
+# TODO hard-code this until full workaround is implemented
+# for the case of missing noise/expect CN annotations (see tool module)
+RUN_HIFI_CNV_CALLING_TOOLCHAIN = []
+log_err("DEV NOTE: HiFi CNV calling deactivated in 00-prepare::30-settings::90_hifi_cnv_toolchain.smk")
+
 if not RUN_HIFI_CNV_CALLING_TOOLCHAIN and VERBOSE:
-    sys.stderr.write("Warning: no HiFi CNV calling toolchain configured to run.")
+    log_err("Warning: no HiFi CNV calling toolchain configured to run.")
 
 HIFI_CNV_CALLING_TOOLCHAIN_WILDCARDS = []
 
