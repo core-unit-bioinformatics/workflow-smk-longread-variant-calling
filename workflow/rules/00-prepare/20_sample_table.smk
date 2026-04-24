@@ -24,7 +24,9 @@ MAP_PATHID_TO_FILE_INFO = None
 
 MATERNAL_ID_MAP = {}
 PATERNAL_ID_MAP = {}
+DUO_PARENT_MAP = {}
 TRIO_CHILDREN = []
+DUO_CHILDREN = []
 
 
 class MandatorySampleSheetColumn(enum.Enum):
@@ -180,8 +182,14 @@ def build_trio_pedigree(sample_sheet: pandas.DataFrame):
         if maternal_map.get(sample, "0") != "0"
         and paternal_map.get(sample, "0") != "0"
     ]
+    duo_children = [
+        sample
+        for sample in sample_names
+        if (maternal_map.get(sample, "0") != "0")
+        ^ (paternal_map.get(sample, "0") != "0")
+    ]
 
-    return maternal_map, paternal_map, trio_children
+    return maternal_map, paternal_map, trio_children,  duo_children
 
 def process_sample_sheet():
     """
@@ -256,16 +264,26 @@ def process_sample_sheet():
     # Validate required columns for the selected mode
     validate_sample_sheet_columns(SAMPLE_SHEET, mode)
 
-    # Trio-specific pedigree building
-    global MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN
+    # Trio-duo-specific pedigree building
+    global MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN, DUO_PARENT_MAP
     MATERNAL_ID_MAP = {}
     PATERNAL_ID_MAP = {}
     TRIO_CHILDREN = []
+    DUO_CHILDREN = []
 
     if mode == VariantCallingMode.trio:
-        MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN = build_trio_pedigree(
+        MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN = build_trio_pedigree(
             SAMPLE_SHEET
         )
+
+    DUO_PARENT_MAP = {
+        sample: (
+            MATERNAL_ID_MAP[sample]
+            if MATERNAL_ID_MAP[sample] != "0"
+            else PATERNAL_ID_MAP[sample]
+        )
+        for sample in DUO_CHILDREN
+    }
 
     # Collect input files and hashes
     sample_input, path_input = collect_input_files(SAMPLE_SHEET)
