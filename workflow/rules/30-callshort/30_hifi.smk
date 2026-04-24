@@ -142,6 +142,80 @@ rule short_call_deeptrio:
         " ; "
         "rm -rfd {params.tempdir}"
 
+rule short_call_deeptrio_duo:
+    input:
+        ref = lambda wildcards: REF_GENOMES[wildcards.ref],
+        ref_idx = lambda wildcards: REF_GENOMES[(wildcards.ref, "fai")],
+        child_bam = rules.split_merged_alignments.output.main,
+        child_bai = rules.split_merged_alignments.output.main_bai,
+        parent_bam = lambda wildcards: expand(
+            rules.split_merged_alignments.output.main,
+            sample=DUO_PARENT_MAP[wildcards.sample],
+            allow_missing=True
+        ),
+        parent_bai = lambda wildcards: expand(
+            rules.split_merged_alignments.output.main_bai,
+            sample=DUO_PARENT_MAP[wildcards.sample],
+            allow_missing=True
+        )
+    output:
+        gvcf_child  = DIR_PROC.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.child.{ref}.{chrom}.g.vcf.gz"
+        ),
+        gvcf_parent = DIR_PROC.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.parent.{ref}.{chrom}.g.vcf.gz"
+        ),
+        vcf_child  = DIR_PROC.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.child.{ref}.{chrom}.vcf.gz"
+        ),
+        vcf_parent = DIR_PROC.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.parent.{ref}.{chrom}.vcf.gz"
+        )
+    log:
+        DIR_LOG.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.{ref}.{chrom}.log"
+        )
+    container:
+        f"{CONTAINER_STORE}/{config['deeptrio']}"
+    threads: CPU_LOW
+    resources:
+        mem_mb = lambda wildcards, attempt: 16384 + 8192 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt**2,
+        arch=":arch=skylake"
+    params:
+        tempdir = lambda wildcards: DIR_PROC.joinpath(
+            "temp", "deeptrio", wildcards.ref,
+            wildcards.sample, wildcards.read_type, wildcards.aligner, wildcards.chrom
+        ),
+        model = lambda wildcards: config["deeptrio_models"][wildcards.read_type],
+        child_name = lambda wildcards: wildcards.sample,
+        parent_name = lambda wildcards: DUO_PARENT_MAP[wildcards.sample]
+    shell:
+        "rm -rf {params.tempdir} && mkdir -p {params.tempdir} && "
+        "/opt/deepvariant/bin/deeptrio/run_deeptrio "
+        "--model_type {params.model} "
+        "--ref {input.ref} "
+        "--reads_child {input.child_bam} "
+        "--reads_parent1 {input.parent_bam} "
+        "--output_vcf_child {output.vcf_child} "
+        "--output_vcf_parent1 {output.vcf_parent} "
+        "--output_gvcf_child {output.gvcf_child} "
+        "--output_gvcf_parent1 {output.gvcf_parent} "
+        "--sample_name_child {params.child_name} "
+        "--sample_name_parent1 {params.parent_name} "
+        "--regions {wildcards.chrom} "
+        "--num_shards {threads} "
+        "--intermediate_results_dir {params.tempdir} "
+        "&> {log} ; rm -rfd {params.tempdir}"
+
+
+
+
 rule run_deepvariant_hifi_calling:
     """TODO - the way the chromosomes
     are loaded here is not yet compatible
@@ -160,7 +234,7 @@ rule run_deepvariant_hifi_calling:
 if config["variant_calling_mode"] == "trio":
     rule run_deeptrio_hifi_calling:
         input:
-            gvcf_child = expand(
+           gvcf_child = expand(
                 rules.short_call_deeptrio.output.gvcf_child,
                 sample=TRIO_CHILDREN,
                 read_type=["hifi"],
@@ -207,4 +281,36 @@ if config["variant_calling_mode"] == "trio":
                 aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
                 ref=USE_REF_GENOMES,
                 chrom=CHROMOSOMES
+            ),
+            gvcf_child_duo = expand(
+                rules.short_call_deeptrio_duo.output.gvcf_child,
+                sample=DUO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES,
+            ),
+            gvcf_parent_duo = expand(
+                rules.short_call_deeptrio_duo.output.gvcf_parent,
+                sample=DUO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES,
+            ),
+            vcf_child_duo = expand(
+                rules.short_call_deeptrio_duo.output.gvcf_child,
+                sample=DUO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES,
+            ),
+            vcf_parent_duo = expand(
+                rules.short_call_deeptrio_duo.output.gvcf_parent,
+                sample=DUO_CHILDREN,
+                read_type=["hifi"],
+                aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+                ref=USE_REF_GENOMES,
+                chrom=CHROMOSOMES,
             )
