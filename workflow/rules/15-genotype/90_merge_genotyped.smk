@@ -211,59 +211,6 @@ if config["variant_calling_mode"] == "trio":
             " | bcftools view -Oz -o {output.vcfgz} "
             " &> {log}"
 
-"""
-def get_trio_duo_gvcfs(sample, read_type, aligner, ref, chrom):
-
-    base = DIR_PROC.joinpath("30-callshort", "trio")
-
-    # Trio
-    if sample in TRIO_CHILDREN:
-        return [
-            base.joinpath(f"{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"),
-            base.joinpath(f"{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"),
-            base.joinpath(f"{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"),
-        ]
-
-    # Duo
-    if sample in DUO_CHILDREN:
-        return [
-            base.joinpath(f"{sample}_{read_type}.{aligner}-deeptrio.duo.child.{ref}.{chrom}.g.vcf.gz"),
-            base.joinpath(f"{sample}_{read_type}.{aligner}-deeptrio.duo.parent.{ref}.{chrom}.g.vcf.gz"),
-        ]
-
-    return []
-
-
-if config["variant_calling_mode"] == "trio":
-
-    rule glnexus_joint:
-        input:
-            gvcfs = lambda wc: get_trio_duo_gvcfs(
-                wc.sample, wc.read_type, wc.aligner, wc.ref, wc.chrom
-            )
-        output:
-            vcfgz = DIR_PROC.joinpath(
-                "15-genotype", "joint",
-                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
-            )
-        log:
-            DIR_LOG.joinpath(
-                "15-genotype", "joint",
-                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
-            )
-        container:
-            f"{CONTAINER_STORE}/{config['glnexus']}"
-        threads: CPU_LOW
-        params:
-            glnexus_preset = config["glnexus_preset"]
-        shell:
-            "glnexus_cli --config {params.glnexus_preset} "
-            "--threads {threads} "
-            "{input.gvcfs} "
-            " | bcftools view -Oz -o {output.vcfgz} "
-            " &> {log}"
-"""
-
 if SAMPLE_PAIRS is not None:
 
     rule run_all_merge_genotypes:
@@ -282,17 +229,7 @@ if SAMPLE_PAIRS is not None:
                 panel=["hgsvc3hprc"],
                 allele_repr=["malc", "balc"]
             ),
-'''
-if config["variant_calling_mode"] == "trio":
-    TRIO_JOINT_OUTPUT = expand(
-        rules.glnexus_trio_joint.output.vcfgz,
-        sample=TRIO_CHILDREN,
-        read_type=["hifi"],
-        aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
-        ref=USE_REF_GENOMES,
-        chrom=CHROMOSOMES
-    )
-'''
+            
 if config["variant_calling_mode"] == "trio":
     TRIO_JOINT_OUTPUT = expand(
         rules.glnexus_trio_joint.output.vcfgz,
