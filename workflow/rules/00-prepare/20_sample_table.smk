@@ -4,6 +4,8 @@ import pathlib
 import hashlib
 import collections
 import re
+from collections import defaultdict
+
 
 
 SAMPLES = None
@@ -27,6 +29,8 @@ PATERNAL_ID_MAP = {}
 DUO_PARENT_MAP = {}
 TRIO_CHILDREN = []
 DUO_CHILDREN = []
+FAMILY_MAP = {}
+MULTI_CHILD_FAMILIES = []
 
 
 class MandatorySampleSheetColumn(enum.Enum):
@@ -266,25 +270,29 @@ def process_sample_sheet():
 
     # Trio-duo-specific pedigree building
     global MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN, DUO_PARENT_MAP
+    global FAMILY_MAP, MULTI_CHILD_FAMILIES
     MATERNAL_ID_MAP = {}
     PATERNAL_ID_MAP = {}
     TRIO_CHILDREN = []
     DUO_CHILDREN = []
+    DUO_PARENT_MAP = {}
+    
 
     if mode == VariantCallingMode.trio:
         MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN = build_trio_pedigree(
             SAMPLE_SHEET
         )
 
-    DUO_PARENT_MAP = {
-        sample: (
-            MATERNAL_ID_MAP[sample]
-            if MATERNAL_ID_MAP[sample] != "0"
-            else PATERNAL_ID_MAP[sample]
-        )
-        for sample in DUO_CHILDREN
-    }
-
+        # DUO parent lookup logic must only run if maps are populated
+        DUO_PARENT_MAP = {
+            sample: (
+                MATERNAL_ID_MAP[sample]
+                if MATERNAL_ID_MAP[sample] != "0"
+                else PATERNAL_ID_MAP[sample]
+            )
+            for sample in DUO_CHILDREN
+        }
+    
     # Collect input files and hashes
     sample_input, path_input = collect_input_files(SAMPLE_SHEET)
     all_samples = sorted(sample_input.keys())
