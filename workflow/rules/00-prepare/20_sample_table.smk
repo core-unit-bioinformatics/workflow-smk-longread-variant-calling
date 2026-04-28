@@ -4,8 +4,6 @@ import pathlib
 import hashlib
 import collections
 import re
-from collections import defaultdict
-
 
 
 SAMPLES = None
@@ -29,8 +27,11 @@ PATERNAL_ID_MAP = {}
 DUO_PARENT_MAP = {}
 TRIO_CHILDREN = []
 DUO_CHILDREN = []
-FAMILY_MAP = {}
 MULTI_CHILD_FAMILIES = []
+SINGLE_CHILD_FAMILIES = []
+FAMILY_CHILDREN = {}
+FAMILY_REPRESENTATIVE_CHILD = {}
+
 
 
 class MandatorySampleSheetColumn(enum.Enum):
@@ -82,7 +83,6 @@ def normalize_sample_sheet_columns(df: pandas.DataFrame) -> pandas.DataFrame:
     df.columns = new_columns
     return df
 
-
 def normalize_parental_ids(df: pandas.DataFrame) -> pandas.DataFrame:
     """
     Normalize parental ID columns if present:
@@ -103,7 +103,6 @@ def normalize_parental_ids(df: pandas.DataFrame) -> pandas.DataFrame:
                 .replace({"": "0"})
             )
     return df
-
 
 def validate_sample_sheet_columns(df: pandas.DataFrame, mode: VariantCallingMode) -> None:
     """
@@ -136,7 +135,6 @@ def validate_sample_sheet_columns(df: pandas.DataFrame, mode: VariantCallingMode
         )
 
     return
-
 
 def build_trio_pedigree(sample_sheet: pandas.DataFrame):
     """
@@ -270,20 +268,22 @@ def process_sample_sheet():
 
     # Trio-duo-specific pedigree building
     global MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN, DUO_PARENT_MAP
-    global FAMILY_MAP, MULTI_CHILD_FAMILIES
+    global MULTI_CHILD_FAMILIES, SINGLE_CHILD_FAMILIES, FAMILY_CHILDREN, FAMILY_REPRESENTATIVE_CHILD
+
     MATERNAL_ID_MAP = {}
     PATERNAL_ID_MAP = {}
     TRIO_CHILDREN = []
     DUO_CHILDREN = []
     DUO_PARENT_MAP = {}
+    MULTI_CHILD_FAMILIES = []
+    SINGLE_CHILD_FAMILIES = []
+    FAMILY_CHILDREN = {}
+    FAMILY_REPRESENTATIVE_CHILD = {}
     
-
     if mode == VariantCallingMode.trio:
         MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN = build_trio_pedigree(
             SAMPLE_SHEET
         )
-
-        # DUO parent lookup logic must only run if maps are populated
         DUO_PARENT_MAP = {
             sample: (
                 MATERNAL_ID_MAP[sample]
@@ -292,7 +292,35 @@ def process_sample_sheet():
             )
             for sample in DUO_CHILDREN
         }
-    
+        
+        family_map = collections.defaultdict(lambda: {"parents": set(), "children": set()})
+
+        for child in TRIO_CHILDREN:
+            mother = MATERNAL_ID_MAP[child]
+            father = PATERNAL_ID_MAP[child]
+            fam_id = f"{mother}_{father}"
+
+            family_map[fam_id]["parents"].update([mother, father])
+            family_map[fam_id]["children"].add(child)
+
+        MULTI_CHILD_FAMILIES = [
+            fam_id
+            for fam_id, data in family_map.items()
+            if len(data["children"]) > 1
+        ]
+        SINGLE_CHILD_FAMILIES = [
+            next(iter(data["children"]))
+            for fam_id, data in family_map.items()
+            if len(data["children"]) == 1
+        ]
+        FAMILY_CHILDREN = {
+            fam: sorted(list(data["children"]))
+            for fam, data in family_map.items()
+        }
+        FAMILY_REPRESENTATIVE_CHILD = {
+            fam: sorted(list(data["children"]))[0]
+            for fam, data in family_map.items()
+        }
     # Collect input files and hashes
     sample_input, path_input = collect_input_files(SAMPLE_SHEET)
     all_samples = sorted(sample_input.keys())
