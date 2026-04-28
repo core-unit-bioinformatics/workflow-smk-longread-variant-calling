@@ -24,4 +24,5 @@ WORKFLOW_OUTPUT.extend(CALL_HIFI_CNV_OUTPUT)
 if config.get("variant_calling_mode") == "trio":
     WORKFLOW_OUTPUT.extend(TRIO_JOINT_OUTPUT)
     WORKFLOW_OUTPUT.extend(DUO_JOINT_OUTPUT)
+    WORKFLOW_OUTPUT.extend(FAMILY_JOINT_OUTPUT)
 

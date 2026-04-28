@@ -211,6 +211,55 @@ if config["variant_calling_mode"] == "trio":
             " | bcftools view -Oz -o {output.vcfgz} "
             " &> {log}"
 
+    rule glnexus_family_joint:
+        input:
+            gvcfs_children = lambda wildcards: expand(
+                DIR_PROC.joinpath(
+                    "30-callshort", "trio",
+                    "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"
+                ),
+                sample = FAMILY_CHILDREN[wildcards.family],
+                allow_missing=True
+            ),
+            gvcf_mother = lambda wildcards: expand(
+                DIR_PROC.joinpath(
+                    "30-callshort", "trio",
+                    "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"
+                ),
+                sample = FAMILY_REPRESENTATIVE_CHILD[wildcards.family],
+                allow_missing=True
+            ),
+            gvcf_father = lambda wildcards: expand(
+                DIR_PROC.joinpath(
+                    "30-callshort", "trio",
+                    "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
+                ),
+                sample = FAMILY_REPRESENTATIVE_CHILD[wildcards.family],
+                allow_missing=True
+            )
+        output:
+            vcfgz = DIR_PROC.joinpath(
+                "15-genotype", "family_joint",
+                "{family}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
+            )
+        log:
+            DIR_LOG.joinpath(
+                "15-genotype", "family_joint",
+                "{family}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
+            )
+        container:
+            f"{CONTAINER_STORE}/{config['glnexus']}"
+        threads: CPU_LOW
+        params:
+            glnexus_preset = config["glnexus_preset"]
+        shell:
+            "glnexus_cli --config {params.glnexus_preset} "
+            "--threads {threads} "
+            "{input.gvcfs_children} {input.gvcf_mother} {input.gvcf_father} "
+            " | bcftools view -Oz -o {output.vcfgz} "
+            " &> {log}"
+
+
 if SAMPLE_PAIRS is not None:
 
     rule run_all_merge_genotypes:
@@ -233,7 +282,7 @@ if SAMPLE_PAIRS is not None:
 if config["variant_calling_mode"] == "trio":
     TRIO_JOINT_OUTPUT = expand(
         rules.glnexus_trio_joint.output.vcfgz,
-        sample=TRIO_CHILDREN,
+        sample=SINGLE_CHILD_FAMILIES,
         read_type=["hifi"],
         aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
         ref=USE_REF_GENOMES,
@@ -247,5 +296,13 @@ if config["variant_calling_mode"] == "trio":
         ref=USE_REF_GENOMES,
         chrom=CHROMOSOMES
     )
+    FAMILY_JOINT_OUTPUT = expand(
+        rules.glnexus_family_joint.output.vcfgz,
+        family=MULTI_CHILD_FAMILIES,
+        read_type=["hifi"],
+        aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
+        ref=USE_REF_GENOMES,
+        chrom=CHROMOSOMES
+)
 
 
