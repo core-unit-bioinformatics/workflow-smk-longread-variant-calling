@@ -1,6 +1,9 @@
 sample	read_type	input_path	maternal_id	paternal_id
 child	hifi	mock_reads_child.fastq	mother	father
 mother	hifi	mock_reads_mother.fastq
-father	hifi	mock_reads_father.fastq	jane
-john	hifi	mock_reads_john.fq
+father	hifi	mock_reads_father.fastq	jane	
+john	hifi	mock_reads_john.fq	mother	father
 jane	hifi	mock_reads_jane.fq
+thomas	hifi	mock_reads_thomas.fq	jana	tobias
+tobias	hifi	mock_reads_tobias.fq
+jana	hifi	mock_reads_jana.fq
