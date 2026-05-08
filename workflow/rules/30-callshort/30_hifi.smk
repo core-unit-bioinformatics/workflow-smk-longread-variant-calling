@@ -214,8 +214,6 @@ rule short_call_deeptrio_duo:
         "&> {log} ; rm -rfd {params.tempdir}"
 
 
-
-
 rule run_deepvariant_hifi_calling:
     """TODO - the way the chromosomes
     are loaded here is not yet compatible
@@ -299,7 +297,7 @@ if config["variant_calling_mode"] == "trio":
                 chrom=CHROMOSOMES,
             ),
             vcf_child_duo = expand(
-                rules.short_call_deeptrio_duo.output.gvcf_child,
+                rules.short_call_deeptrio_duo.output.vcf_child,
                 sample=DUO_CHILDREN,
                 read_type=["hifi"],
                 aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
@@ -307,7 +305,7 @@ if config["variant_calling_mode"] == "trio":
                 chrom=CHROMOSOMES,
             ),
             vcf_parent_duo = expand(
-                rules.short_call_deeptrio_duo.output.gvcf_parent,
+                rules.short_call_deeptrio_duo.output.vcf_parent,
                 sample=DUO_CHILDREN,
                 read_type=["hifi"],
                 aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],

@@ -139,126 +139,112 @@ rule concat_region_sample_genotypes:
             " && "
         "tabix -p vcf --threads {threads} {output.vcf}"
 
-
-if config["variant_calling_mode"] == "trio":
-
-    rule glnexus_trio_joint:
-        input:
-            gvcf_child = DIR_PROC.joinpath(
-                "30-callshort", "trio",
-                "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"
+rule glnexus_trio_joint:
+    input:
+        gvcf_child = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"
             ),
-            gvcf_mother = DIR_PROC.joinpath(
-                "30-callshort", "trio",
-                "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"
+        gvcf_mother = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"
             ),
-            gvcf_father = DIR_PROC.joinpath(
-                "30-callshort", "trio",
-                "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
+        gvcf_father = DIR_PROC.joinpath(
+            "30-callshort", "trio",
+            "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
             )
-        output:
-            vcfgz = DIR_PROC.joinpath(
-                "15-genotype", "trio_joint",
-                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
+    output:
+        vcfgz = DIR_PROC.joinpath(
+            "15-genotype", "trio_joint",
+            "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
             )
-        log:
-            DIR_LOG.joinpath(
-                "15-genotype", "trio_joint",
-                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
+    log:
+        DIR_LOG.joinpath(
+        "15-genotype", "trio_joint",
+            "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
             )
+    container:
+        f"{CONTAINER_STORE}/{config['glnexus']}"
+    threads: CPU_LOW
+    params:
+        glnexus_preset = config["glnexus_preset"]
+    shell:
+        "glnexus_cli --config {params.glnexus_preset} "
+        "--threads {threads} "
+        "{input.gvcf_child} {input.gvcf_mother} {input.gvcf_father} "
+        " | bcftools view -Oz -o {output.vcfgz} "
+        " &> {log}"
 
-        container:
-            f"{CONTAINER_STORE}/{config['glnexus']}"
-        threads: CPU_LOW
-        params:
-            glnexus_preset = config["glnexus_preset"]
-        shell:
-            "glnexus_cli --config {params.glnexus_preset} "
-            "--threads {threads} "
-            "{input.gvcf_child} {input.gvcf_mother} {input.gvcf_father} "
-            " | bcftools view -Oz -o {output.vcfgz} "
-            " &> {log}"
-
-    rule glnexus_duo_joint:
-        input:
-            gvcf_child = DIR_PROC.joinpath(
-                "30-callshort", "duo",
-                "{sample}_{read_type}.{aligner}-deeptrio.duo.child.{ref}.{chrom}.g.vcf.gz"
+rule glnexus_duo_joint:
+    input:
+        gvcf_child = DIR_PROC.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.child.{ref}.{chrom}.g.vcf.gz"
             ),
-            gvcf_parent = DIR_PROC.joinpath(
-                "30-callshort", "duo",
-                "{sample}_{read_type}.{aligner}-deeptrio.duo.parent.{ref}.{chrom}.g.vcf.gz"
+        gvcf_parent = DIR_PROC.joinpath(
+            "30-callshort", "duo",
+            "{sample}_{read_type}.{aligner}-deeptrio.duo.parent.{ref}.{chrom}.g.vcf.gz"
             )
-        output:
-            vcfgz = DIR_PROC.joinpath(
-                "15-genotype", "duo_joint",
-                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
+    output:
+        vcfgz = DIR_PROC.joinpath(
+            "15-genotype", "duo_joint",
+            "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
             )
-        log:
-            DIR_LOG.joinpath(
-                "15-genotype", "duo_joint",
-                "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
+    log:
+        DIR_LOG.joinpath(
+            "15-genotype", "duo_joint",
+            "{sample}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
             )
-        container:
-            f"{CONTAINER_STORE}/{config['glnexus']}"
-        threads: CPU_LOW
-        params:
-            glnexus_preset = config["glnexus_preset"]
-        shell:
-            "glnexus_cli --config {params.glnexus_preset} "
-            "--threads {threads} "
-            "{input.gvcf_child} {input.gvcf_parent} "
-            " | bcftools view -Oz -o {output.vcfgz} "
-            " &> {log}"
+    container:
+        f"{CONTAINER_STORE}/{config['glnexus']}"
+    threads: CPU_LOW
+    params:
+        glnexus_preset = config["glnexus_preset"]
+    shell:
+        "glnexus_cli --config {params.glnexus_preset} "
+        "--threads {threads} "
+        "{input.gvcf_child} {input.gvcf_parent} "
+        " | bcftools view -Oz -o {output.vcfgz} "
+        " &> {log}"
 
-    rule glnexus_family_joint:
-        input:
-            gvcfs_children = lambda wildcards: expand(
-                DIR_PROC.joinpath(
-                    "30-callshort", "trio",
-                    "{sample}_{read_type}.{aligner}-deeptrio.child.{ref}.{chrom}.g.vcf.gz"
-                ),
-                sample = FAMILY_CHILDREN[wildcards.family],
-                allow_missing=True
+rule glnexus_family_joint:
+    input:
+        gvcfs_children = lambda wildcards: expand(
+            rules.short_call_deeptrio.output.gvcf_child,
+            sample = FAMILY_CHILDREN[wildcards.family],
+            allow_missing=True
             ),
-            gvcf_mother = lambda wildcards: expand(
-                DIR_PROC.joinpath(
-                    "30-callshort", "trio",
-                    "{sample}_{read_type}.{aligner}-deeptrio.mother.{ref}.{chrom}.g.vcf.gz"
-                ),
-                sample = FAMILY_REPRESENTATIVE_CHILD[wildcards.family],
-                allow_missing=True
+        gvcf_mother = lambda wildcards: expand(
+            rules.short_call_deeptrio.output.gvcf_mother,
+            sample = FAMILY_REPRESENTATIVE_CHILD[wildcards.family],
+            allow_missing=True
             ),
-            gvcf_father = lambda wildcards: expand(
-                DIR_PROC.joinpath(
-                    "30-callshort", "trio",
-                    "{sample}_{read_type}.{aligner}-deeptrio.father.{ref}.{chrom}.g.vcf.gz"
-                ),
-                sample = FAMILY_REPRESENTATIVE_CHILD[wildcards.family],
-                allow_missing=True
+        gvcf_father = lambda wildcards: expand(
+            rules.short_call_deeptrio.output.gvcf_father,
+            sample = FAMILY_REPRESENTATIVE_CHILD[wildcards.family],
+            allow_missing=True
             )
-        output:
-            vcfgz = DIR_PROC.joinpath(
-                "15-genotype", "family_joint",
-                "{family}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
+    output:
+        vcfgz = DIR_PROC.joinpath(
+            "15-genotype", "family_joint",
+            "{family}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.vcf.gz"
             )
-        log:
-            DIR_LOG.joinpath(
-                "15-genotype", "family_joint",
-                "{family}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
+    log:
+        DIR_LOG.joinpath(
+            "15-genotype", "family_joint",
+            "{family}_{read_type}.{aligner}-glnexus.{ref}.{chrom}.log"
             )
-        container:
-            f"{CONTAINER_STORE}/{config['glnexus']}"
-        threads: CPU_LOW
-        params:
-            glnexus_preset = config["glnexus_preset"]
-        shell:
-            "glnexus_cli --config {params.glnexus_preset} "
-            "--threads {threads} "
-            "{input.gvcfs_children} {input.gvcf_mother} {input.gvcf_father} "
-            " | bcftools view -Oz -o {output.vcfgz} "
-            " &> {log}"
-
+    container:
+        f"{CONTAINER_STORE}/{config['glnexus']}"
+    threads: CPU_LOW
+    params:
+        glnexus_preset = config["glnexus_preset"]
+    shell:
+        "glnexus_cli --config {params.glnexus_preset} "
+        "--threads {threads} "
+        "{input.gvcfs_children} {input.gvcf_mother} {input.gvcf_father} "
+        " | bcftools view -Oz -o {output.vcfgz} "
+        " &> {log}"
 
 if SAMPLE_PAIRS is not None:
 
@@ -304,5 +290,3 @@ if config["variant_calling_mode"] == "trio":
         ref=USE_REF_GENOMES,
         chrom=CHROMOSOMES
 )
-
-
