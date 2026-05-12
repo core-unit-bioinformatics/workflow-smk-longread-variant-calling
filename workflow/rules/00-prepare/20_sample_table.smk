@@ -5,7 +5,6 @@ import hashlib
 import collections
 import re
 
-
 SAMPLES = None
 SAMPLE_SEX = None
 
@@ -33,11 +32,11 @@ FAMILY_CHILDREN = {}
 FAMILY_REPRESENTATIVE_CHILD = {}
 
 
-
 class MandatorySampleSheetColumn(enum.Enum):
     """
     Canonical sample sheet columns with aliases mapped to the same value.
     """
+
     # sample
     sample = 0
     sample_id = 0
@@ -65,6 +64,7 @@ class VariantCallingMode(enum.Enum):
     population = 0
     trio = 1
 
+
 def normalize_sample_sheet_columns(df: pandas.DataFrame) -> pandas.DataFrame:
     """
     Normalize known column names in the sample sheet to canonical names.
@@ -83,6 +83,7 @@ def normalize_sample_sheet_columns(df: pandas.DataFrame) -> pandas.DataFrame:
     df.columns = new_columns
     return df
 
+
 def normalize_parental_ids(df: pandas.DataFrame) -> pandas.DataFrame:
     """
     Normalize parental ID columns if present:
@@ -95,16 +96,13 @@ def normalize_parental_ids(df: pandas.DataFrame) -> pandas.DataFrame:
         MandatorySampleSheetColumn.paternal_id.name,
     ):
         if col in df.columns:
-            df[col] = (
-                df[col]
-                .fillna("0")
-                .astype(str)
-                .str.strip()
-                .replace({"": "0"})
-            )
+            df[col] = df[col].fillna("0").astype(str).str.strip().replace({"": "0"})
     return df
 
-def validate_sample_sheet_columns(df: pandas.DataFrame, mode: VariantCallingMode) -> None:
+
+def validate_sample_sheet_columns(
+    df: pandas.DataFrame, mode: VariantCallingMode
+) -> None:
     """
     Validate that required columns are present depending on mode:
     - population: sample, read_type, input_path
@@ -135,6 +133,7 @@ def validate_sample_sheet_columns(df: pandas.DataFrame, mode: VariantCallingMode
         )
 
     return
+
 
 def build_trio_pedigree(sample_sheet: pandas.DataFrame):
     """
@@ -181,8 +180,7 @@ def build_trio_pedigree(sample_sheet: pandas.DataFrame):
     trio_children = [
         sample
         for sample in sample_names
-        if maternal_map.get(sample, "0") != "0"
-        and paternal_map.get(sample, "0") != "0"
+        if maternal_map.get(sample, "0") != "0" and paternal_map.get(sample, "0") != "0"
     ]
     duo_children = [
         sample
@@ -191,7 +189,8 @@ def build_trio_pedigree(sample_sheet: pandas.DataFrame):
         ^ (paternal_map.get(sample, "0") != "0")
     ]
 
-    return maternal_map, paternal_map, trio_children,  duo_children
+    return maternal_map, paternal_map, trio_children, duo_children
+
 
 def process_sample_sheet():
     """
@@ -279,10 +278,10 @@ def process_sample_sheet():
     SINGLE_CHILD_FAMILIES = []
     FAMILY_CHILDREN = {}
     FAMILY_REPRESENTATIVE_CHILD = {}
-    
+
     if mode == VariantCallingMode.trio:
-        MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN = build_trio_pedigree(
-            SAMPLE_SHEET
+        MATERNAL_ID_MAP, PATERNAL_ID_MAP, TRIO_CHILDREN, DUO_CHILDREN = (
+            build_trio_pedigree(SAMPLE_SHEET)
         )
         DUO_PARENT_MAP = {
             sample: (
@@ -292,8 +291,10 @@ def process_sample_sheet():
             )
             for sample in DUO_CHILDREN
         }
-        
-        family_map = collections.defaultdict(lambda: {"parents": set(), "children": set()})
+
+        family_map = collections.defaultdict(
+            lambda: {"parents": set(), "children": set()}
+        )
 
         for child in TRIO_CHILDREN:
             mother = MATERNAL_ID_MAP[child]
@@ -303,24 +304,19 @@ def process_sample_sheet():
             family_map[fam_id]["parents"].update([mother, father])
             family_map[fam_id]["children"].add(child)
 
-        MULTI_CHILD_FAMILIES = [
-            fam_id
-            for fam_id, data in family_map.items()
-            if len(data["children"]) > 1
-        ]
-        SINGLE_CHILD_FAMILIES = [
-            next(iter(data["children"]))
-            for fam_id, data in family_map.items()
-            if len(data["children"]) == 1
-        ]
-        FAMILY_CHILDREN = {
-            fam: sorted(list(data["children"]))
-            for fam, data in family_map.items()
-        }
-        FAMILY_REPRESENTATIVE_CHILD = {
-            fam: sorted(list(data["children"]))[0]
-            for fam, data in family_map.items()
-        }
+        for fam_id, data in family_map.items():
+            children = sorted(data["children"])
+            FAMILY_CHILDREN[fam_id] = children
+            FAMILY_REPRESENTATIVE_CHILD[fam_id] = children[0]
+
+            if len(children) > 1:
+                # Multi-child families: use fam_id (parents define the family)
+                MULTI_CHILD_FAMILIES.append(fam_id)
+            else:
+                # Single-child families (pure trios): use child ID because trio outputs
+                # are child-centric (DeepTrio, GLnexus naming)
+                SINGLE_CHILD_FAMILIES.append(children[0])
+
     # Collect input files and hashes
     sample_input, path_input = collect_input_files(SAMPLE_SHEET)
     all_samples = sorted(sample_input.keys())
@@ -401,11 +397,10 @@ def collect_input_files(sample_sheet):
     for row in sample_sheet.itertuples():
         if row.sample not in sample_input:
             sample_info = dict(
-                [(rt.name, {
-                    "paths": [],
-                    "path_hashes": [],
-                    "path_ids": []
-                    }) for rt in ReadTypes]
+                [
+                    (rt.name, {"paths": [], "path_hashes": [], "path_ids": []})
+                    for rt in ReadTypes
+                ]
             )
             sample_input[row.sample] = sample_info
 
@@ -425,7 +420,7 @@ def collect_input_files(sample_sheet):
                 "sample": row.sample,
                 "read_type": read_type,
                 "path": path,
-                "path_hash": full_hash
+                "path_hash": full_hash,
             }
             if read_type == "hifi":
                 HIFI_INPUT.append(path_id)
@@ -479,13 +474,10 @@ def collect_sequence_input(path_spec):
         elif input_path.is_dir():
             collected_files = _collect_files(input_path)
             collected_hashes = [
-                hashlib.sha256(
-                    subset_path(f).encode("utf-8")
-                ).hexdigest() for f in collected_files
+                hashlib.sha256(subset_path(f).encode("utf-8")).hexdigest()
+                for f in collected_files
             ]
-            collected_path_ids = [
-                full_hash[:10] for full_hash in collected_hashes
-            ]
+            collected_path_ids = [full_hash[:10] for full_hash in collected_hashes]
             input_files.extend(collected_files)
             input_hashes.extend(collected_hashes)
             path_ids.extend(collected_path_ids)
