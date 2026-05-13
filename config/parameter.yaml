@@ -124,6 +124,9 @@ mosdepth_min_mapq: [0, 20]
 # ONT reads (>= R10.4)
 # latest test with DeepVariant v1.10.0
 # > replace mock container name w/ actual name
+# ===
+# IMPORTANT: if you use a GPU-enabled version of DeepVariant,
+# make sure to call snakemake with '--apptainer-args "--nv"'
 deepvariant: mock_deepvariant_v1.10.0_container.cont
 deepvariant_models:
   hifi: PACBIO
@@ -133,6 +136,9 @@ deepvariant_models:
 # NB: the model name for ONT reads in DeepTrio
 # is just 'ONT' and not 'ONT_R104' (see above)
 # > replace mock container name w/ actual name
+# ===
+# IMPORTANT: if you use a GPU-enabled version of DeepVariant,
+# make sure to call snakemake with '--apptainer-args "--nv"'
 deeptrio: mock_deeptrio_v1.10.0_container.cont
 deeptrio_models:
   hifi: PACBIO

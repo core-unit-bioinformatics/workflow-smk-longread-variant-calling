@@ -172,16 +172,16 @@ def build_trio_pedigree(sample_sheet: pandas.DataFrame):
         maternal_map[sample] = mother
         paternal_map[sample] = father
 
-    # critical piece of logic here
-    # the 'or' makes this a "trio or duo" query;
-    # changing to "and" to make this "trio" only
-    # until the code path for duo support has
-    # been implemented
+    # children of proper trios must have both parents set,
+    # hence the 'and' selection below
     trio_children = [
         sample
         for sample in sample_names
         if maternal_map.get(sample, "0") != "0" and paternal_map.get(sample, "0") != "0"
     ]
+
+    # children of proper duos must have one parent set but
+    # not the other, hence the '^' [XOR] selection below
     duo_children = [
         sample
         for sample in sample_names
@@ -202,7 +202,17 @@ def process_sample_sheet():
     - Populate global sample lists and metadata structures
     """
 
-    SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
+    try:
+        SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
+    except KeyError:
+        err_msg = (
+            "Workflow configuation does not contain key 'samples', which usually "
+            "means you forgot to properly specify the path to the sample sheet file. "
+            "Please read the instructions how to run the workflow; in brief: "
+            "snakemake [...] --config samples='path/to/sample/sheet/file.tsv' "
+        )
+        logerr(err_msg)
+        raise
 
     # Read config value as string; default to Enum name
     variant_calling_mode = config.get(
