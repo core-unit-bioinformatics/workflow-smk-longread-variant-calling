@@ -300,30 +300,3 @@ if SAMPLE_PAIRS is not None:
                 panel=["hgsvc3hprc"],
                 allele_repr=["malc", "balc"],
             ),
-
-
-if config["variant_calling_mode"] == "trio":
-    TRIO_JOINT_OUTPUT = expand(
-        rules.glnexus_trio_joint.output.vcfgz,
-        sample=SINGLE_CHILD_FAMILIES,
-        read_type=["hifi"],
-        aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
-        ref=USE_REF_GENOMES,
-        chrom=CHROMOSOMES,
-    )
-    DUO_JOINT_OUTPUT = expand(
-        rules.glnexus_duo_joint.output.vcfgz,
-        sample=DUO_CHILDREN,
-        read_type=["hifi"],
-        aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
-        ref=USE_REF_GENOMES,
-        chrom=CHROMOSOMES,
-    )
-    FAMILY_JOINT_OUTPUT = expand(
-        rules.glnexus_family_joint.output.vcfgz,
-        family=MULTI_CHILD_FAMILIES,
-        read_type=["hifi"],
-        aligner=ALIGNER_FOR_CALLER[("deepvar", "hifi")],
-        ref=USE_REF_GENOMES,
-        chrom=CHROMOSOMES,
-    )
