@@ -214,8 +214,8 @@ rule create_chromosome_deeptrio_trio_fofn:
             try:
                 this_idx = chrom_order[this_chrom]
             except KeyError:
-                err_msg = "50-postcall::20_concat::"
-                err_msg += "create_chromosome_glnexus_fofn: "
+                err_msg = "30-callshort::trio-split::"
+                err_msg += "create_chromosome_deeptrio_trio_fofn: "
                 err_msg += f"cannot identify chromosome: {vcf}"
                 logerr(err_msg)
                 raise
@@ -297,8 +297,8 @@ rule create_chromosome_deeptrio_duo_fofn:
             try:
                 this_idx = chrom_order[this_chrom]
             except KeyError:
-                err_msg = "50-postcall::20_concat::"
-                err_msg += "create_chromosome_glnexus_fofn: "
+                err_msg = "30-callshort::duo-split::"
+                err_msg += "create_chromosome_deeptrio_duo_fofn: "
                 err_msg += f"cannot identify chromosome: {vcf}"
                 logerr(err_msg)
                 raise
