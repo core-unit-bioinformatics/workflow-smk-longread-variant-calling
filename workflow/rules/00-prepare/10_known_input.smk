@@ -17,3 +17,10 @@ class ReadTypes(enum.Enum):
     ont_reads = 1
     nano = 1
     nanopore = 1
+
+
+class VariantCallingMode(enum.Enum):
+    population = 0
+    pop = 0
+    trio = 1
+    family = 1
