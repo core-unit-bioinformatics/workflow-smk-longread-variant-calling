@@ -1,7 +1,5 @@
 import sys
 
-CONSTRAINT_SAMPLES = _build_constraint(SAMPLES)
-
 # TODO infer input from known inputs
 CONSTRAINT_READ_TYPE = _build_constraint(["hifi", "ont"])
 
@@ -26,6 +24,15 @@ CONSTRAINT_REF_GENOMES = "(" + "|".join(USE_REF_GENOMES + ["prg", "prg1", "prg2"
 
 CHROMOSOMES = config.get("call_chromosomes", ["chr1"])
 assert isinstance(CHROMOSOMES, list)
+
+try:
+    VARIANT_CALLING_MODE = VariantCallingMode[config.get("variant_calling_mode", VariantCallingMode.population.name)]
+except KeyError:
+    cfg_key = config["variant_calling_mode"]
+    valid_modes = sorted(member.name for member in VariantCallingMode)
+    err_msg = (f"Invalid config value for variant calling mode: '{cfg_key}'. Please select one of: {valid_modes}")
+    log_err(err_msg)
+    raise
 
 ### if the genotyping data flow / personalized reference genome
 # modules need to be executed, the PanGenie singularity container
