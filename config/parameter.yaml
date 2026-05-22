@@ -42,6 +42,12 @@ input_file_ext:
 # valid calling modes:
 # 1. population: jointly process samples but ignore potential kinship information
 # 2. trio: as above plus run DeepTrio for family samples (at least duos)
+# +++ IMPORTANT +++
+# If you change the calling mode during the pipeline execution,
+# the file accounting will break and you have to force a reset:
+# snakemake [...] --config resetacc=True
+# If you do not do that, you will key wildcard errors and the workflow DAG
+# can no longer be resolved.
 variant_calling_mode: trio
 
 ######################################
